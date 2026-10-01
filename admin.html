@@ -1,77 +1,87 @@
 <!DOCTYPE html>
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<meta name="referrer" content="strict-origin-when-cross-origin"><meta name="theme-color" content="#100B14">
-<title>প্রোডাক্ট যোগ করুন | অ্যাডমিন</title>
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin"><meta name="theme-color" content="#100B14">
+<title>প্রোডাক্ট ও রিভিউ ম্যানেজ</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css"></head>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.tbl{overflow-x:auto;margin-bottom:32px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-weight:600;white-space:nowrap}
+td img{width:56px;height:56px;object-fit:cover;border-radius:8px;display:block}
+td .btn{width:auto;margin:0;min-height:40px;padding:0 14px}
+</style></head>
 <body><main class="wrap">
 <p style="margin:18px 0 0"><a href="index.html">← প্রোডাক্ট যোগ করুন (হোম)</a></p>
-<h1 style="margin-top:28px;font-size:1.8rem">নতুন প্রোডাক্ট যোগ করুন</h1>
-<form class="box" id="f">
-<label>অ্যাডমিন পাসওয়ার্ড<input name="password" type="password" required></label>
-<label>প্রোডাক্টের নাম<input name="name" required></label>
-<div class="row" style="align-items:flex-start"><label style="flex:1;min-width:140px">দাম (৳)<input name="price" type="number" min="0" required></label>
-<label style="flex:1;min-width:140px">আগের দাম (৳, ঐচ্ছিক — ছাড় দেখাতে)<input name="oldprice" type="number" min="0"></label></div>
-<label>ক্যাটাগরি (যেমন Bridal, Necklace, Earrings)<input name="category" list="cats"><datalist id="cats"><option value="Bridal"><option value="Necklace"><option value="Earrings"><option value="New"></datalist></label>
-<label>বিবরণ (প্রতি লাইনে একটা পয়েন্ট লিখলে বুলেট হয়ে দেখাবে)<textarea name="desc" rows="5"></textarea></label>
-<label>YouTube ভিডিও লিংক (ঐচ্ছিক)<input name="video" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
-<label>ছবির লিংক (প্রতি লাইনে একটা করে। Drive-এ "Anyone with the link" করে দিন)<textarea name="image" rows="4"></textarea></label>
-<div class="row"><button class="btn" type="submit">প্রোডাক্ট সেভ করুন</button><span class="msg" id="msg" role="status"></span></div>
-</form>
+<h1 style="margin:12px 0 16px;font-size:1.8rem">প্রোডাক্ট ও রিভিউ ম্যানেজ</h1>
+<div class="box" style="margin-bottom:24px"><label>অ্যাডমিন পাসওয়ার্ড<input id="pw" type="password" autocomplete="current-password"></label></div>
+
+<h2 class="sec">প্রোডাক্ট মুছুন</h2>
+<div class="tbl"><table><thead><tr><th>ছবি</th><th>নাম</th><th>দাম</th><th></th></tr></thead>
+<tbody id="pb"><tr><td colspan="4">লোড হচ্ছে...</td></tr></tbody></table></div>
+
 <h2 class="sec">রিভিউ যোগ করুন</h2>
 <form class="box" id="rf">
-<label>অ্যাডমিন পাসওয়ার্ড<input name="password" type="password" required></label>
 <label>প্রোডাক্ট<select name="productId" id="rp" required></select></label>
 <div class="row" style="align-items:flex-start"><label style="flex:2;min-width:160px">ক্রেতার নাম<input name="name" required maxlength="60"></label>
 <label style="flex:1;min-width:100px">রেটিং<select name="rating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label></div>
 <label>রিভিউ (ঐচ্ছিক)<textarea name="text" rows="3" maxlength="500"></textarea></label>
-<div class="row"><button class="btn" type="submit">রিভিউ সেভ করুন</button><span class="msg" id="rmsg" role="status"></span></div>
+<label>ক্রেতার রিভিউয়ের স্ক্রিনশট (ঐচ্ছিক)<input id="rshot" type="file" accept="image/*"></label>
+<div class="row"><button class="btn" id="rgo" type="submit">রিভিউ সেভ করুন</button><span class="msg" id="rmsg" role="status"></span></div>
 </form>
+
 <h2 class="sec">ক্রেতার রিভিউ অনুমোদন</h2>
-<form class="box" id="pf"><label>অ্যাডমিন পাসওয়ার্ড<input name="password" type="password" required></label>
-<button class="btn" type="submit">অপেক্ষমাণ রিভিউ দেখুন</button><div id="pl"></div></form>
-<h2 class="sec">সব প্রোডাক্ট</h2><section class="grid" id="list"></section></main>
+<div class="box"><button class="btn" id="pload" type="button">অপেক্ষমাণ রিভিউ দেখুন</button><div id="pl"></div></div>
+</main>
 <script src="js/app.js"></script>
 <script>
-function fillSel(){document.getElementById("rp").innerHTML=(_c||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}
-const list=document.getElementById("list"),msg=document.getElementById("msg"),f=document.getElementById("f");
-renderList(list,true).then(fillSel);
-function say(t,bad){msg.style.color=bad?"#ff7b6b":"";msg.textContent=t}
-f.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const {password,...p}=Object.fromEntries(new FormData(f));
-  if(p.video&&!ytId(p.video))return say("YouTube লিংকটি সঠিক নয়, আবার দেখুন।",1);
-  say("সেভ হচ্ছে...");
+const $=id=>document.getElementById(id),pw=$("pw");
+pw.value=sessionStorage.getItem("pw")||"";
+pw.addEventListener("input",()=>sessionStorage.setItem("pw",pw.value));
+function needPw(){if(!pw.value){alert("আগে অ্যাডমিন পাসওয়ার্ড দিন");pw.focus();return false}return true}
+function shrink(file,max=1600){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85).split(",")[1])};
+  im.onerror=()=>rej(new Error("ছবি পড়া যায়নি"));im.src=u})}
+function fillSel(){$("rp").innerHTML=(_c||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}
+async function loadProducts(){
   try{
-    const r=await api({action:"add",password,product:{id:Date.now(),...p}});
-    if(!r.ok)return say(r.error||"সেভ হয়নি",1);
-    sessionStorage.setItem("pw",password);f.reset();say("সেভ হয়েছে।");renderList(list,true).then(fillSel);
-  }catch(err){say("সার্ভারে যোগাযোগ করা যায়নি।",1)}
+    const l=await loadAll(true);
+    $("pb").innerHTML=l.length?l.map(p=>{const c=cover(p);return `<tr><td>${c?`<img src="${esc(c)}" alt="" referrerpolicy="no-referrer" onerror="imgFail(this)">`:""}</td><td>${esc(p.name)}</td><td>${tk(p.price)}</td><td><button class="btn alt" data-del="${esc(p.id)}">মুছুন</button></td></tr>`}).join(""):'<tr><td colspan="4">কোনো প্রোডাক্ট নেই।</td></tr>';
+    fillSel();
+  }catch(e){$("pb").innerHTML='<tr><td colspan="4">প্রোডাক্ট লোড করা যায়নি।</td></tr>'}
+}
+loadProducts();
+$("pb").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-del]");if(!b||!needPw()||!confirm("এই প্রোডাক্ট মুছে ফেলবেন?"))return;
+  b.disabled=true;const r=await api({action:"delete",password:pw.value,id:b.dataset.del});
+  if(!r.ok){alert(r.error||"মোছা যায়নি");b.disabled=false;return}loadProducts();
 });
-list.addEventListener("click",async e=>{
-  const id=e.target.dataset.del;if(!id||!confirm("এই প্রোডাক্ট মুছে ফেলবেন?"))return;
-  const password=f.password.value||sessionStorage.getItem("pw")||prompt("অ্যাডমিন পাসওয়ার্ড দিন");if(!password)return;
-  const r=await api({action:"delete",password,id});
-  if(!r.ok)return say(r.error||"মোছা যায়নি",1);
-  renderList(list,true).then(fillSel);
-});
-document.getElementById("rf").addEventListener("submit",async e=>{
-  e.preventDefault();const rf=e.target,{password,...review}=Object.fromEntries(new FormData(rf)),rm=document.getElementById("rmsg");
-  rm.style.color="";rm.textContent="সেভ হচ্ছে...";
-  try{const r=await api({action:"addReview",password,review});
-    if(!r.ok){rm.style.color="#ff7b6b";rm.textContent=r.error||"সেভ হয়নি";return}
+$("rf").addEventListener("submit",async e=>{
+  e.preventDefault();if(!needPw())return;
+  const rf=e.target,rm=$("rmsg"),d=Object.fromEntries(new FormData(rf)),file=$("rshot").files[0];
+  rm.style.color="";rm.textContent="সেভ হচ্ছে...";$("rgo").disabled=true;
+  try{
+    let photo="";
+    if(file){rm.textContent="স্ক্রিনশট আপলোড হচ্ছে...";const u=await api({action:"upload",password:pw.value,data:await shrink(file)});if(!u.ok)throw new Error(u.error||"ছবি আপলোড হয়নি");photo=u.url}
+    const r=await api({action:"addReview",password:pw.value,review:{productId:d.productId,name:d.name,rating:d.rating,text:d.text,photo}});
+    if(!r.ok)throw new Error(r.error||"সেভ হয়নি");
     rf.reset();rm.textContent="রিভিউ যোগ হয়েছে।";
-  }catch(err){rm.style.color="#ff7b6b";rm.textContent="সার্ভারে যোগাযোগ করা যায়নি।"}
+  }catch(err){rm.style.color="#ff7b6b";rm.textContent=err.message||"সমস্যা হয়েছে"}
+  finally{$("rgo").disabled=false}
 });
-const pl=document.getElementById("pl");let ppw="";
+const pl=$("pl");
 async function loadPending(){
-  const r=await api({action:"pendingReviews",password:ppw});
+  if(!needPw())return;
+  const r=await api({action:"pendingReviews",password:pw.value});
   if(!r.ok){pl.textContent=r.error||"লোড হয়নি";return}
   pl.innerHTML=r.list.length?r.list.map(x=>`<div class="box" style="margin:8px 0"><b>${esc(x.product)}</b><div>${stars(x.rating)} ${esc(x.name)} <small>(অর্ডার ${esc(x.orderId)})</small></div><p style="margin:0">${esc(x.text)}</p>${x.photo?`<img class="rph" src="${esc(imgURL(x.photo,400))}" alt="">`:""}<div class="row"><button class="btn" data-d="approved" data-row="${x.row}" data-o="${esc(x.orderId)}">অনুমোদন</button><button class="btn alt" data-d="rejected" data-row="${x.row}" data-o="${esc(x.orderId)}">বাতিল</button></div></div>`).join(""):"কোনো অপেক্ষমাণ রিভিউ নেই।";
 }
-document.getElementById("pf").addEventListener("submit",e=>{e.preventDefault();ppw=e.target.password.value;loadPending()});
-pl.addEventListener("click",async e=>{const b=e.target.closest("button[data-d]");if(!b)return;
-  const r=await api({action:"moderate",password:ppw,row:b.dataset.row,orderId:b.dataset.o,decision:b.dataset.d});
-  if(!r.ok){alert(r.error||"হয়নি");return}loadPending()});
+$("pload").onclick=loadPending;
+pl.addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-d]");if(!b)return;
+  const r=await api({action:"moderate",password:pw.value,row:b.dataset.row,orderId:b.dataset.o,decision:b.dataset.d});
+  if(!r.ok){alert(r.error||"হয়নি");return}loadPending();
+});
 </script></body></html>
