@@ -33,8 +33,10 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 <label>ক্যাটাগরি <small>যেমন Bridal, Necklace, Earrings</small><input name="category" list="cats"><datalist id="cats"><option value="Bridal"><option value="Necklace"><option value="Earrings"><option value="New"></datalist></label>
 <label>বিবরণ <small>প্রতি লাইনে একটা পয়েন্ট লিখুন</small><textarea name="desc" rows="5"></textarea></label>
 <label>YouTube ভিডিও লিংক <small>ঐচ্ছিক</small><input name="video" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
-<div><label for="ph">ছবি</label>
-<label class="pick" for="ph" style="margin-top:6px">📷 ছবি বেছে নিন (একসাথে একাধিক)<input id="ph" type="file" accept="image/*" multiple></label></div>
+<div><span style="font-weight:600">ছবি</span>
+<div class="pick" id="pickbtn" role="button" tabindex="0" style="margin-top:6px">📷 ছবি বেছে নিন (একসাথে একাধিক)</div>
+<input id="ph" type="file" accept="image/*" multiple hidden>
+<small id="cnt"></small></div>
 <div class="pv" id="pv"></div>
 <label>অথবা ছবির লিংক <small>প্রতি লাইনে একটা, ঐচ্ছিক</small><textarea name="links" rows="2"></textarea></label>
 <button class="btn" id="go" type="submit">প্রোডাক্ট সেভ করুন</button>
@@ -48,20 +50,25 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 </div>
 </main>
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwiuWLqS1l7Zim-coaBZuPnUFSsnA9MBlyhJyNU3k6KtZlCqUIYEouAkxvgvpb-sdXS/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbxPHNUStvLnIlCt3K9xnBLdU2VCaJtflxvNV41XQPmivEJ9UlAVFqFDPSaOSqOY1Ofq/exec";
 const SITE="https://gaziabdulahad.github.io/Shop/";
 const $=id=>document.getElementById(id);
 let files=[];
 function ytOk(u){return /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))[\w-]{11}/.test(u)}
 function say(t,bad){$("msg").className=bad?"bad":"";$("msg").textContent=t}
-function draw(){$("pv").innerHTML=files.map((x,i)=>`<div class="th"><img src="${x.u}" alt=""><button type="button" data-i="${i}" aria-label="সরান">✕</button></div>`).join("")}
+function draw(){$("cnt").textContent=files.length?files.length+" টি ছবি বাছাই করা হয়েছে":"";$("pv").innerHTML=files.map((x,i)=>`<div class="th"><img src="${x.u}" alt=""><button type="button" data-i="${i}" aria-label="সরান">✕</button></div>`).join("")}
 function shrink(file,max=1400){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);
   im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
     c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85).split(",")[1])};
   im.onerror=()=>rej(new Error("ছবি পড়া যায়নি: "+file.name));im.src=u})}
 async function api(b){const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)});return r.json()}
 try{const s=localStorage.getItem("shop_pw");if(s){$("pw").value=s;$("rem").checked=true}}catch(e){}
-$("ph").addEventListener("change",e=>{for(const f of e.target.files)files.push({f,u:URL.createObjectURL(f)});e.target.value="";draw()});
+$("pickbtn").onclick=()=>$("ph").click();
+$("pickbtn").onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();$("ph").click()}};
+$("ph").addEventListener("change",e=>{Array.from(e.target.files||[]).forEach(f=>files.push({f,u:URL.createObjectURL(f)}));draw();e.target.value=""});
+async function toB64(file){try{return await shrink(file)}catch(_){
+  if(file.size>2500000)throw new Error("ছবিটি পড়া যায়নি, JPG বা PNG ছবি দিন");
+  return await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(",")[1]);fr.onerror=()=>rej(new Error("ছবি পড়া যায়নি"));fr.readAsDataURL(file)})}}
 $("pv").addEventListener("click",e=>{const i=e.target.dataset.i;if(i==null)return;files.splice(+i,1);draw()});
 $("f").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -72,7 +79,7 @@ $("f").addEventListener("submit",async e=>{
     const urls=[];
     for(let i=0;i<files.length;i++){
       say(`ছবি ${i+1}/${files.length} আপলোড হচ্ছে...`);
-      const r=await api({action:"upload",password,data:await shrink(files[i].f)});
+      const r=await api({action:"upload",password,data:await toB64(files[i].f)});
       if(!r.ok)throw new Error(r.error||"ছবি আপলোড হয়নি");urls.push(r.url);
     }
     const image=[...urls,...links.split(/[\s,|]+/).filter(Boolean)].join("\n"),id=Date.now();
