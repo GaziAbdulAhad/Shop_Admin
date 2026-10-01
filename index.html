@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#100B14">
+<title>প্রোডাক্ট যোগ করুন</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#100B14;color:#fff;font:16px/1.6 "Hind Siliguri",system-ui,sans-serif}
+main{max-width:620px;margin:0 auto;padding:20px 16px 60px}h1{font-size:1.6rem;margin:8px 0 16px}
+form,.done{background:#1B1422;border:1px solid #2e2238;border-radius:16px;padding:20px;display:grid;gap:14px}
+label{font-weight:600;display:grid;gap:6px}small{font-weight:400;color:#B8AFC0}
+input,textarea,select{font:inherit;padding:12px 14px;min-height:48px;border:1px solid #2e2238;border-radius:10px;background:#120c17;color:#fff;width:100%}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid #D4AF37;outline-offset:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:480px){.two{grid-template-columns:1fr}}
+.btn{background:linear-gradient(135deg,#e2bd52,#c49a2a);color:#1a0f1f;border:0;border-radius:12px;min-height:52px;font:inherit;font-weight:700;cursor:pointer;width:100%}
+.btn:disabled{opacity:.6;cursor:wait}.btn.alt{background:#D99ACF;min-height:44px}
+.pick{display:grid;place-items:center;border:2px dashed #4a3358;border-radius:12px;padding:18px;text-align:center;cursor:pointer;color:#D99ACF}
+.pick input{display:none}.pv{display:flex;gap:8px;flex-wrap:wrap}
+.th{position:relative;width:76px;height:76px;border-radius:8px;overflow:hidden}.th img{width:100%;height:100%;object-fit:cover}
+.th button{position:absolute;top:2px;right:2px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer}
+.chk{display:flex;align-items:center;gap:8px;font-weight:400;color:#B8AFC0}.chk input{width:20px;min-height:20px}
+#msg{margin:0;font-weight:600;color:#D99ACF;min-height:1.5em}#msg.bad{color:#ff7b6b}
+.done{border-color:#D4AF37;text-align:center}.done a{color:#D99ACF;word-break:break-all}
+</style></head>
+<body><main>
+<h1>নতুন প্রোডাক্ট যোগ করুন</h1>
+<p style="margin:0 0 14px"><a href="admin.html" style="color:#D99ACF">প্রোডাক্ট মুছুন / রিভিউ অনুমোদন করুন →</a></p>
+<form id="f">
+<label>অ্যাডমিন পাসওয়ার্ড<input id="pw" name="password" type="password" required autocomplete="current-password"></label>
+<label class="chk"><input type="checkbox" id="rem"> এই ডিভাইসে পাসওয়ার্ড মনে রাখুন (শুধু নিজের ফোন/কম্পিউটারে)</label>
+<label>প্রোডাক্টের নাম<input name="name" required></label>
+<div class="two"><label>দাম (৳)<input name="price" type="number" min="0" inputmode="numeric" required></label>
+<label>আগের দাম (৳) <small>ছাড় দেখাতে, ঐচ্ছিক</small><input name="oldprice" type="number" min="0" inputmode="numeric"></label></div>
+<label>ক্যাটাগরি <small>যেমন Bridal, Necklace, Earrings</small><input name="category" list="cats"><datalist id="cats"><option value="Bridal"><option value="Necklace"><option value="Earrings"><option value="New"></datalist></label>
+<label>বিবরণ <small>প্রতি লাইনে একটা পয়েন্ট লিখুন</small><textarea name="desc" rows="5"></textarea></label>
+<label>YouTube ভিডিও লিংক <small>ঐচ্ছিক</small><input name="video" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
+<div><label for="ph">ছবি</label>
+<label class="pick" for="ph" style="margin-top:6px">📷 ছবি বেছে নিন (একসাথে একাধিক)<input id="ph" type="file" accept="image/*" multiple></label></div>
+<div class="pv" id="pv"></div>
+<label>অথবা ছবির লিংক <small>প্রতি লাইনে একটা, ঐচ্ছিক</small><textarea name="links" rows="2"></textarea></label>
+<button class="btn" id="go" type="submit">প্রোডাক্ট সেভ করুন</button>
+<p id="msg" role="status"></p>
+</form>
+<div class="done" id="done" hidden>
+<div style="font-size:2rem">✅</div><b>প্রোডাক্ট যোগ হয়েছে!</b>
+<div>প্রোডাক্ট পেজের লিংক (Facebook বিজ্ঞাপনে দিন):</div><a id="lk" target="_blank" rel="noopener"></a>
+<button class="btn alt" id="cp" type="button">লিংক কপি করুন</button>
+<button class="btn" id="again" type="button">আরেকটি প্রোডাক্ট যোগ করুন</button>
+</div>
+</main>
+<script>
+const API_URL="https://script.google.com/macros/s/AKfycbxPHNUStvLnIlCt3K9xnBLdU2VCaJtflxvNV41XQPmivEJ9UlAVFqFDPSaOSqOY1Ofq/exec";
+const SITE="https://gaziabdulahad.github.io/Shop/";
+const $=id=>document.getElementById(id);
+let files=[];
+function ytOk(u){return /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/))[\w-]{11}/.test(u)}
+function say(t,bad){$("msg").className=bad?"bad":"";$("msg").textContent=t}
+function draw(){$("pv").innerHTML=files.map((x,i)=>`<div class="th"><img src="${x.u}" alt=""><button type="button" data-i="${i}" aria-label="সরান">✕</button></div>`).join("")}
+function shrink(file,max=1400){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85).split(",")[1])};
+  im.onerror=()=>rej(new Error("ছবি পড়া যায়নি: "+file.name));im.src=u})}
+async function api(b){const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(b)});return r.json()}
+try{const s=localStorage.getItem("shop_pw");if(s){$("pw").value=s;$("rem").checked=true}}catch(e){}
+$("ph").addEventListener("change",e=>{for(const f of e.target.files)files.push({f,u:URL.createObjectURL(f)});e.target.value="";draw()});
+$("pv").addEventListener("click",e=>{const i=e.target.dataset.i;if(i==null)return;files.splice(+i,1);draw()});
+$("f").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const fd=Object.fromEntries(new FormData($("f"))),password=fd.password,links=(fd.links||"").trim();delete fd.password;delete fd.links;
+  if(fd.video&&!ytOk(fd.video))return say("YouTube লিংকটি সঠিক নয়, আবার দেখুন।",1);
+  $("go").disabled=true;
+  try{
+    const urls=[];
+    for(let i=0;i<files.length;i++){
+      say(`ছবি ${i+1}/${files.length} আপলোড হচ্ছে...`);
+      const r=await api({action:"upload",password,data:await shrink(files[i].f)});
+      if(!r.ok)throw new Error(r.error||"ছবি আপলোড হয়নি");urls.push(r.url);
+    }
+    const image=[...urls,...links.split(/[\s,|]+/).filter(Boolean)].join("\n"),id=Date.now();
+    say("প্রোডাক্ট সেভ হচ্ছে...");
+    const r=await api({action:"add",password,product:{id,...fd,image}});
+    if(!r.ok)throw new Error(r.error||"সেভ হয়নি");
+    try{$("rem").checked?localStorage.setItem("shop_pw",password):localStorage.removeItem("shop_pw")}catch(e){}
+    const link=SITE+"product.html?id="+id;$("lk").href=link;$("lk").textContent=link;
+    $("f").hidden=true;$("done").hidden=false;window.scrollTo(0,0);
+  }catch(err){say(err.message||"সমস্যা হয়েছে, আবার চেষ্টা করুন।",1)}
+  finally{$("go").disabled=false}
+});
+$("cp").onclick=async()=>{try{await navigator.clipboard.writeText($("lk").href);$("cp").textContent="কপি হয়েছে ✓"}catch(e){$("cp").textContent="লিংকে চেপে ধরে কপি করুন"}};
+$("again").onclick=()=>{$("f").reset();files=[];draw();say("");$("cp").textContent="লিংক কপি করুন";$("done").hidden=true;$("f").hidden=false;
+  try{const s=localStorage.getItem("shop_pw");if(s){$("pw").value=s;$("rem").checked=true}}catch(e){}};
+</script></body></html>
