@@ -2,7 +2,7 @@
 const PAGES=[{href:"index.html",label:"হোম"},{href:"index.html#products",label:"কালেকশন"},{href:"about.html",label:"আমাদের সম্পর্কে"}];
 const SHOP_NAME="আমার দোকান";
 const SITE_BASE="https://gaziabdulahad.github.io/Shop/"; // অ্যাডমিন repo-তে এখানে মূল সাইটের পুরো ঠিকানা বসে
-const API_URL="https://script.google.com/macros/s/AKfycbyTY_4ZcXBPa1a6d4hqLsWLall8TqBLAAZhv0RjPdlblG5QOu7ikfMkklRnycJav1AB/exec"; // Apps Script Web App URL
+const API_URL="https://script.google.com/macros/s/AKfycbwwUSLME88UAyp7cNQ5WJo9CbZ5U4DYMpQxB4a1avcC7loenC0gAvS6ULujgFJR_KhQ/exec"; // Apps Script Web App URL
 const DELIVERY={in:{label:"ঢাকার ভিতরে",fee:60},out:{label:"ঢাকার বাইরে",fee:120}}; // Code.gs-এর DELIVERY_FEE-এর সাথে মিল রাখুন
 const TRUST=[["🚚","সারাদেশে ডেলিভারি"],["💵","ক্যাশ অন ডেলিভারি"],["✅","কোয়ালিটি চেক করা"],["💬","কাস্টমার সাপোর্ট"]]; // নিজের সত্যি তথ্য অনুযায়ী বদলান
 const DISTRICTS="ঢাকা,গাজীপুর,নারায়ণগঞ্জ,নরসিংদী,মানিকগঞ্জ,মুন্সীগঞ্জ,কিশোরগঞ্জ,টাঙ্গাইল,ফরিদপুর,গোপালগঞ্জ,মাদারীপুর,রাজবাড়ী,শরীয়তপুর,চট্টগ্রাম,কক্সবাজার,কুমিল্লা,ব্রাহ্মণবাড়িয়া,চাঁদপুর,ফেনী,নোয়াখালী,লক্ষ্মীপুর,খাগড়াছড়ি,রাঙ্গামাটি,বান্দরবান,সিলেট,হবিগঞ্জ,মৌলভীবাজার,সুনামগঞ্জ,রাজশাহী,নাটোর,নওগাঁ,চাঁপাইনবাবগঞ্জ,পাবনা,সিরাজগঞ্জ,বগুড়া,জয়পুরহাট,খুলনা,বাগেরহাট,সাতক্ষীরা,যশোর,ঝিনাইদহ,মাগুরা,নড়াইল,কুষ্টিয়া,চুয়াডাঙ্গা,মেহেরপুর,বরিশাল,ভোলা,পটুয়াখালী,পিরোজপুর,ঝালকাঠি,বরগুনা,রংপুর,দিনাজপুর,গাইবান্ধা,কুড়িগ্রাম,লালমনিরহাট,নীলফামারী,পঞ্চগড়,ঠাকুরগাঁও,ময়মনসিংহ,জামালপুর,নেত্রকোণা,শেরপুর".split(",");
