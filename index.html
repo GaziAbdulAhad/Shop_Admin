@@ -4,6 +4,8 @@
 <title>প্রোডাক্ট যোগ করুন</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
+[hidden]{display:none!important}
+
 *{box-sizing:border-box}body{margin:0;background:#100B14;color:#fff;font:16px/1.6 "Hind Siliguri",system-ui,sans-serif}
 main{max-width:620px;margin:0 auto;padding:20px 16px 60px}h1{font-size:1.6rem;margin:8px 0 16px}
 form,.done{background:#1B1422;border:1px solid #2e2238;border-radius:16px;padding:20px;display:grid;gap:14px}
@@ -23,7 +25,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 </style></head>
 <body><main>
 <h1>নতুন প্রোডাক্ট যোগ করুন</h1>
-<p style="margin:0 0 14px"><a href="admin.html" style="color:#D99ACF">প্রোডাক্ট মুছুন / রিভিউ অনুমোদন করুন →</a></p>
+<p style="margin:0 0 14px"><a href="admin.html" style="color:#D99ACF">প্রোডাক্ট মুছুন / রিভিউ অনুমোদন করুন →</a> &nbsp;·&nbsp; <a href="orders.html" style="color:#D99ACF">অর্ডার ড্যাশবোর্ড →</a></p>
 <form id="f">
 <label>অ্যাডমিন পাসওয়ার্ড<input id="pw" name="password" type="password" required autocomplete="current-password"></label>
 <label class="chk"><input type="checkbox" id="rem"> এই ডিভাইসে পাসওয়ার্ড মনে রাখুন (শুধু নিজের ফোন/কম্পিউটারে)</label>
@@ -31,6 +33,11 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 <div class="two"><label>দাম (৳)<input name="price" type="number" min="0" inputmode="numeric" required></label>
 <label>আগের দাম (৳) <small>ছাড় দেখাতে, ঐচ্ছিক</small><input name="oldprice" type="number" min="0" inputmode="numeric"></label></div>
 <label>ক্যাটাগরি <small>যেমন Bridal, Necklace, Earrings</small><input name="category" list="cats"><datalist id="cats"><option value="Bridal"><option value="Necklace"><option value="Earrings"><option value="New"></datalist></label>
+<fieldset style="border:1px solid #2e2238;border-radius:10px;padding:8px 12px;display:grid;gap:4px"><legend>ট্যাগ (হোমপেজের সারির জন্য)</legend>
+<label class="chk"><input type="checkbox" name="tag" value="new"><span>🆕 নতুন পণ্য</span></label>
+<label class="chk"><input type="checkbox" name="tag" value="trending"><span>🔥 Trending</span></label>
+<label class="chk"><input type="checkbox" name="tag" value="offer"><span>🏷️ সেল / অফার</span></label></fieldset>
+<label>স্টক <small>খালি = সীমাহীন, 0 = স্টক শেষ</small><input name="stock" type="number" min="0" inputmode="numeric"></label>
 <label>বিবরণ <small>প্রতি লাইনে একটা পয়েন্ট লিখুন</small><textarea name="desc" rows="5"></textarea></label>
 <label>YouTube ভিডিও লিংক <small>ঐচ্ছিক</small><input name="video" type="url" placeholder="https://www.youtube.com/watch?v=..."></label>
 <div><span style="font-weight:600">ছবি</span>
@@ -50,7 +57,7 @@ input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px soli
 </div>
 </main>
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbwwUSLME88UAyp7cNQ5WJo9CbZ5U4DYMpQxB4a1avcC7loenC0gAvS6ULujgFJR_KhQ/exec";
+const API_URL="https://script.google.com/macros/s/AKfycbygiqtld8GgbiK5xAk-fKWle4Qs433SzKyoKxMl_YN7caqlCzUsxNutmrO3AEpbNc6s/exec";
 const SITE="https://gaziabdulahad.github.io/Shop/";
 const $=id=>document.getElementById(id);
 let files=[];
@@ -72,7 +79,7 @@ async function toB64(file){try{return await shrink(file)}catch(_){
 $("pv").addEventListener("click",e=>{const i=e.target.dataset.i;if(i==null)return;files.splice(+i,1);draw()});
 $("f").addEventListener("submit",async e=>{
   e.preventDefault();
-  const fd=Object.fromEntries(new FormData($("f"))),password=fd.password,links=(fd.links||"").trim();delete fd.password;delete fd.links;
+  const fd=Object.fromEntries(new FormData($("f"))),password=fd.password,links=(fd.links||"").trim();delete fd.password;delete fd.links;fd.tags=[...$("f").querySelectorAll("[name=tag]:checked")].map(x=>x.value).join(",");delete fd.tag;
   if(fd.video&&!ytOk(fd.video))return say("YouTube লিংকটি সঠিক নয়, আবার দেখুন।",1);
   $("go").disabled=true;
   try{
