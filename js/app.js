@@ -1,8 +1,8 @@
 /* নতুন পেজ যোগ করতে: ১) নতুন .html ফাইল বানান ২) নিচের PAGES-এ এক লাইন যোগ করুন */
-const PAGES=[{href:"index.html",label:"হোম"},{href:"index.html#products",label:"কালেকশন"},{href:"about.html",label:"আমাদের সম্পর্কে"}];
+const PAGES=[{href:"index.html",label:"হোম"},{href:"index.html#products",label:"কালেকশন"},{href:"about.html",label:"আমাদের সম্পর্কে"},{href:"contact.html",label:"যোগাযোগ"},{href:"policy.html",label:"নীতিমালা"},{href:"track.html",label:"অর্ডার ট্র্যাক"}];
 const SHOP_NAME="আমার দোকান";
 const SITE_BASE="https://gaziabdulahad.github.io/Shop/"; // অ্যাডমিন repo-তে এখানে মূল সাইটের পুরো ঠিকানা বসে
-const API_URL="https://script.google.com/macros/s/AKfycbwwUSLME88UAyp7cNQ5WJo9CbZ5U4DYMpQxB4a1avcC7loenC0gAvS6ULujgFJR_KhQ/exec"; // Apps Script Web App URL
+const API_URL="https://script.google.com/macros/s/AKfycbygiqtld8GgbiK5xAk-fKWle4Qs433SzKyoKxMl_YN7caqlCzUsxNutmrO3AEpbNc6s/exec"; // Apps Script Web App URL
 const DELIVERY={in:{label:"ঢাকার ভিতরে",fee:60},out:{label:"ঢাকার বাইরে",fee:120}}; // Code.gs-এর DELIVERY_FEE-এর সাথে মিল রাখুন
 const TRUST=[["🚚","সারাদেশে ডেলিভারি"],["💵","ক্যাশ অন ডেলিভারি"],["✅","কোয়ালিটি চেক করা"],["💬","কাস্টমার সাপোর্ট"]]; // নিজের সত্যি তথ্য অনুযায়ী বদলান
 const DISTRICTS="ঢাকা,গাজীপুর,নারায়ণগঞ্জ,নরসিংদী,মানিকগঞ্জ,মুন্সীগঞ্জ,কিশোরগঞ্জ,টাঙ্গাইল,ফরিদপুর,গোপালগঞ্জ,মাদারীপুর,রাজবাড়ী,শরীয়তপুর,চট্টগ্রাম,কক্সবাজার,কুমিল্লা,ব্রাহ্মণবাড়িয়া,চাঁদপুর,ফেনী,নোয়াখালী,লক্ষ্মীপুর,খাগড়াছড়ি,রাঙ্গামাটি,বান্দরবান,সিলেট,হবিগঞ্জ,মৌলভীবাজার,সুনামগঞ্জ,রাজশাহী,নাটোর,নওগাঁ,চাঁপাইনবাবগঞ্জ,পাবনা,সিরাজগঞ্জ,বগুড়া,জয়পুরহাট,খুলনা,বাগেরহাট,সাতক্ষীরা,যশোর,ঝিনাইদহ,মাগুরা,নড়াইল,কুষ্টিয়া,চুয়াডাঙ্গা,মেহেরপুর,বরিশাল,ভোলা,পটুয়াখালী,পিরোজপুর,ঝালকাঠি,বরগুনা,রংপুর,দিনাজপুর,গাইবান্ধা,কুড়িগ্রাম,লালমনিরহাট,নীলফামারী,পঞ্চগড়,ঠাকুরগাঁও,ময়মনসিংহ,জামালপুর,নেত্রকোণা,শেরপুর".split(",");
@@ -15,6 +15,10 @@ function imgFail(el){if(el.dataset.f)return;el.dataset.f=1;const m=el.src.match(
 function imgList(p){return String(p.image||"").split(/[\s,|]+/).filter(Boolean)}
 function cover(p){const a=imgList(p)[0];if(a)return imgURL(a,700);const v=ytId(p.video);return v?`https://img.youtube.com/vi/${v}/hqdefault.jpg`:""}
 function off(p){const o=Number(p.oldprice),n=Number(p.price);return o>n?Math.round((o-n)/o*100):0}
+function isSoldOut(p){const t=String(p.stock==null?"":p.stock).trim().toLowerCase();return t==="0"||t==="out"||t==="শেষ"}
+function hasTag(p,...ts){const a=String(p.tags||"").toLowerCase().split(/[,\s|]+/).filter(Boolean);return ts.some(t=>a.includes(t))}
+function inRow(p,k){return k==="new"?hasTag(p,"new","নতুন"):k==="trending"?hasTag(p,"trending","trend","ট্রেন্ডিং"):k==="offer"?(hasTag(p,"offer","sale","অফার")||off(p)>0):true}
+const CART_SVG='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.7l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.1a1.6 1.6 0 0 0 1.6-1.2L20.5 7H6"/></svg>';
 function priceHTML(p){const d=off(p);return `<div class="pr"><span class="price">${tk(p.price)}</span>${d?`<s class="old">${tk(p.oldprice)}</s><span class="off">${d}% OFF</span>`:""}</div>`}
 
 function stars(n){const r=Math.round(n);return `<span class="stars" aria-label="${n} / 5">${"★".repeat(r)}<i>${"★".repeat(5-r)}</i></span>`}
@@ -27,16 +31,16 @@ async function loadAll(force){if(!_c||force)_c=await getProducts();return _c}
 
 function cardHTML(p,admin){
   const c=cover(p),d=off(p),url=SITE_BASE+"product.html?id="+encodeURIComponent(p.id);
-  return `<article class="card"><a class="cimg" href="${url}" aria-label="${esc(p.name)}">${c?`<img src="${esc(c)}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="imgFail(this)">`:""}${d?`<span class="badge">-${d}%</span>`:""}</a>
+  return `<article class="card"><a class="cimg" href="${url}" aria-label="${esc(p.name)}">${c?`<img src="${esc(c)}" alt="${esc(p.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="imgFail(this)">`:""}${d?`<span class="badge">-${d}%</span>`:""}${isSoldOut(p)?`<span class="sobadge">স্টক শেষ</span>`:""}</a>
   <div class="body"><h3><a href="${url}">${esc(p.name)}</a></h3>${ratingHTML(p)}${priceHTML(p)}
-  ${admin?`<button class="btn alt" data-del="${esc(p.id)}">মুছে ফেলুন</button>`:`<a class="btn gold" href="${SITE_BASE}order.html?id=${encodeURIComponent(p.id)}">এখনই অর্ডার করুন</a>`}</div></article>`;
+  ${admin?`<button class="btn alt" data-del="${esc(p.id)}">মুছে ফেলুন</button>`:(isSoldOut(p)?`<span class="btn gold dis">স্টক শেষ</span>`:`<div class="crow"><a class="btn gold" href="${SITE_BASE}order.html?id=${encodeURIComponent(p.id)}">এখনই অর্ডার করুন</a><button class="cartbtn" type="button" data-cart="${esc(p.id)}" aria-label="কার্টে যোগ করুন">${CART_SVG}</button></div>`)}</div></article>`;
 }
-async function renderList(el,admin,q,cat){
+async function renderList(el,admin,q,cat,tag){
   if(!_c)el.innerHTML=Array(6).fill('<div class="card sk"><div class="sk-i"></div><div class="body"><i></i><i></i><i></i></div></div>').join("");
   try{
     const all=await loadAll(admin),t=(q||"").toLowerCase();
-    const l=all.filter(p=>(!cat||p.category===cat)&&(!t||(p.name+" "+(p.desc||"")).toLowerCase().includes(t)));
-    el.innerHTML=l.length?l.map(p=>cardHTML(p,admin)).join(""):`<div class="empty" style="grid-column:1/-1">${q||cat?"কোনো প্রোডাক্ট পাওয়া যায়নি।":"এখনও কোনো প্রোডাক্ট নেই।"}</div>`;
+    const l=all.filter(p=>(!cat||p.category===cat)&&(!tag||inRow(p,tag))&&(!t||(p.name+" "+(p.desc||"")).toLowerCase().includes(t)));
+    el.innerHTML=l.length?l.map(p=>cardHTML(p,admin)).join(""):`<div class="empty" style="grid-column:1/-1">${q||cat||tag?"কোনো প্রোডাক্ট পাওয়া যায়নি।":"এখনও কোনো প্রোডাক্ট নেই।"}</div>`;
   }catch(e){el.innerHTML=`<div class="empty" style="grid-column:1/-1">প্রোডাক্ট লোড করা যায়নি। ইন্টারনেট বা API_URL ঠিক আছে কিনা দেখুন।</div>`}
 }
 function videoBlock(el,p){
@@ -53,7 +57,7 @@ function layout(){
   document.body.insertAdjacentHTML("afterbegin",`<header class="site"><div class="wrap"><a class="logo" href="${SITE_BASE}index.html">${SHOP_NAME}</a><button class="burger" aria-label="মেনু" aria-expanded="false">☰</button><nav aria-label="প্রধান মেনু">${PAGES.map(p=>`<a href="${SITE_BASE}${p.href}" class="${p.href===cur?"on":""}">${p.label}</a>`).join("")}</nav></div></header>`);
   const b=document.querySelector(".burger");
   b.onclick=()=>{const o=document.body.classList.toggle("menu");b.setAttribute("aria-expanded",o);b.textContent=o?"✕":"☰"};
-  document.body.insertAdjacentHTML("beforeend",`<footer class="site"><div class="wrap"><strong>${SHOP_NAME}</strong><br>© ${new Date().getFullYear()} All Rights Reserved</div></footer>`);
+  document.body.insertAdjacentHTML("beforeend",`<footer class="site"><div class="wrap"><strong>${SHOP_NAME}</strong><br><a href="${SITE_BASE}policy.html">নীতিমালা</a> · <a href="${SITE_BASE}contact.html">যোগাযোগ</a><br>© ${new Date().getFullYear()} All Rights Reserved</div></footer>`);
 }
 
 function openLightbox(urls,start){
