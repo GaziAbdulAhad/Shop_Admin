@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin"><meta name="theme-color" content="#100B14">
+<title>অর্ডার ড্যাশবোর্ড</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+[hidden]{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px}
+.st{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.st b{display:block;font-size:1.5rem;color:var(--brand)}.st small{color:var(--muted)}
+.tbl{overflow-x:auto;margin-bottom:32px}table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:600;white-space:nowrap}
+td select{min-height:40px;padding:6px 8px;width:auto}td a{color:var(--brand)}
+</style></head>
+<body><main class="wrap">
+<p style="margin:18px 0 0"><a href="index.html">← প্রোডাক্ট যোগ করুন</a> &nbsp;·&nbsp; <a href="admin.html">প্রোডাক্ট ও রিভিউ ম্যানেজ</a></p>
+<h1 style="margin:12px 0 16px;font-size:1.8rem">অর্ডার ড্যাশবোর্ড</h1>
+<div class="box" style="margin-bottom:20px"><label>অ্যাডমিন পাসওয়ার্ড<input id="pw" type="password" autocomplete="current-password"></label>
+<button class="btn" id="load" type="button">অর্ডার লোড করুন</button><p class="msg" id="msg" role="status"></p></div>
+<div id="dash" hidden>
+<div class="stats" id="stats"></div>
+<div class="chips" id="chips"></div>
+<div class="tbl"><table><thead><tr><th>সময়</th><th>অর্ডার</th><th>গ্রাহক</th><th>পণ্য</th><th>মোট</th><th>জেলা</th><th>স্ট্যাটাস</th></tr></thead><tbody id="tb"></tbody></table></div>
+<p class="hint">সবশেষ ৩০০টি অর্ডারের ভিত্তিতে। স্ট্যাটাস বদলালে ক্রেতার ট্র্যাক পেজেও বদলে যায়, এবং "ডেলিভারড" করলে ক্রেতা রিভিউ দিতে পারে।</p>
+</div></main>
+<script src="js/app.js"></script>
+<script>
+const $=id=>document.getElementById(id),pw=$("pw"),msg=$("msg");
+const ST=["নতুন","যোগাযোগ হয়েছে","কনফার্মড","প্রসেসিং","শিপড","ডেলিভারড","বাতিল"];
+let orders=[],cur="";
+pw.value=sessionStorage.getItem("pw")||"";
+pw.addEventListener("input",()=>sessionStorage.setItem("pw",pw.value));
+function say(t,bad){msg.style.color=bad?"#ff7b6b":"";msg.textContent=t}
+function stats(){
+  const today=new Date(Date.now()+6*3600e3).toISOString().slice(0,10),n=s=>orders.filter(o=>o.status===s).length;
+  const delivered=orders.filter(o=>o.status==="ডেলিভারড").reduce((a,o)=>a+o.total,0);
+  const cells=[[orders.length,"মোট অর্ডার"],[orders.filter(o=>o.time.slice(0,10)===today).length,"আজকের অর্ডার"],[n("নতুন"),"নতুন"],[n("যোগাযোগ হয়েছে")+n("কনফার্মড")+n("প্রসেসিং"),"প্রসেসে"],[n("শিপড"),"শিপড"],[n("ডেলিভারড"),"ডেলিভারড"],[n("বাতিল"),"বাতিল"],[tk(delivered),"ডেলিভারড বিক্রি"]];
+  $("stats").innerHTML=cells.map(c=>`<div class="st"><b>${c[0]}</b><small>${c[1]}</small></div>`).join("");
+  $("chips").innerHTML=["",...ST].map(s=>`<button class="chip${s===cur?" on":""}" data-s="${esc(s)}" type="button">${s||"সব"}</button>`).join("");
+}
+function table(){
+  const l=cur?orders.filter(o=>o.status===cur):orders;
+  $("tb").innerHTML=l.length?l.map(o=>`<tr><td style="white-space:nowrap">${esc(o.time)}</td><td>${esc(o.orderId)}</td>
+   <td><b>${esc(o.name)}</b><br><a href="tel:${esc(o.phone)}">${esc(o.phone)}</a> · <a href="https://wa.me/${esc(String(o.phone).replace(/^0/,"880"))}" target="_blank" rel="noopener">WhatsApp</a><br><small>${esc(o.address)}</small>${o.note?`<br><small>নোট: ${esc(o.note)}</small>`:""}</td>
+   <td>${esc(o.product)}</td><td style="white-space:nowrap"><b>${tk(o.total)}</b></td><td>${esc(o.district)}</td>
+   <td><select data-id="${esc(o.orderId)}" data-old="${esc(o.status)}" aria-label="স্ট্যাটাস">${ST.map(s=>`<option${s===o.status?" selected":""}>${s}</option>`).join("")}</select></td></tr>`).join(""):'<tr><td colspan="7">কোনো অর্ডার নেই।</td></tr>';
+}
+async function load(){
+  if(!pw.value){say("আগে অ্যাডমিন পাসওয়ার্ড দিন",1);pw.focus();return}
+  say("লোড হচ্ছে...");
+  try{const r=await api({action:"orders",password:pw.value});
+    if(!r.ok)throw new Error(r.error||"লোড হয়নি");
+    orders=r.list;say("");$("dash").hidden=false;stats();table()}
+  catch(e){say(e.message||"সার্ভারে যোগাযোগ করা যায়নি",1)}
+}
+$("load").onclick=load;
+$("chips").addEventListener("click",e=>{const b=e.target.closest("[data-s]");if(!b)return;cur=b.dataset.s;stats();table()});
+$("tb").addEventListener("change",async e=>{const s=e.target.closest("select[data-id]");if(!s)return;
+  s.disabled=true;
+  try{const r=await api({action:"setStatus",password:pw.value,orderId:s.dataset.id,status:s.value});
+    if(!r.ok)throw new Error(r.error||"বদলানো যায়নি");
+    const o=orders.find(x=>x.orderId===s.dataset.id);if(o)o.status=s.value;s.dataset.old=s.value;say("স্ট্যাটাস আপডেট হয়েছে।");stats()}
+  catch(err){s.value=s.dataset.old;say(err.message||"সমস্যা হয়েছে",1)}
+  finally{s.disabled=false}});
+if(pw.value)load();
+</script></body></html>
