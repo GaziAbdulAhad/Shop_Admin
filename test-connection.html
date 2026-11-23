@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>সংযোগ পরীক্ষা — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>body{background:#F6F4F1}.log{font-family:ui-monospace,monospace;font-size:.78rem;background:#100B14;color:#9FE3B0;border-radius:12px;padding:.8rem 1rem;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;margin-top:.6rem}</style>
+</head>
+<body>
+<main class="content" style="max-width:680px;margin:0 auto;padding-top:2rem">
+  <h1 style="font-family:var(--font-display);color:var(--purple)">সংযোগ পরীক্ষা</h1>
+  <p class="text-muted">এই পেজ ব্যাকএন্ডে সরাসরি কল করে দেখায় কোথায় সমস্যা। এর আগে <b>Admin password</b> দিন — পেজ কোনো পাসওয়ার্ড সংরক্ষণ করে না।</p>
+
+  <div class="card card-pad" style="margin-top:1rem">
+    <div class="field"><label for="pw">অ্যাডমিন পাসওয়ার্ড <span class="req">*</span></label>
+      <input class="input" id="pw" type="password" autocomplete="off" placeholder="Apps Script-এর ADMIN_PASSWORD"></div>
+    <button class="btn btn-primary" id="go" type="button">পরীক্ষা শুরু করুন</button>
+    <div class="log" id="log" aria-live="polite"></div>
+  </div>
+
+  <p class="hint" style="margin-top:.8rem">পরীক্ষা: ① orders (পাবলিক) → ② pendingReviews (পাসওয়ার্ড) → ③ bizList:expenses → ④ bizSave টেস্ট এন্ট্রি (তারপর মুছে দেয়) → ⑤ bizDelete।</p>
+</main>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/api.js"></script>
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const API = ADM.API_URL;
+const log = document.getElementById('log');
+const line = s => { log.textContent += s + '\n'; log.scrollTop = log.scrollHeight; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function post(body) {
+  const t0 = Date.now();
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+  const dt = Date.now() - t0;
+  const txt = await r.text();
+  let j = null; try { j = JSON.parse(txt); } catch { }
+  return { status: r.status, ms: dt, json: j, raw: txt.slice(0, 200) };
+}
+
+document.getElementById('go').addEventListener('click', async () => {
+  const pw = document.getElementById('pw').value.trim();
+  if (!pw) { line('❌ পাসওয়ার্ড দিন'); return; }
+  document.getElementById('go').disabled = true;
+  log.textContent = '';
+  line('▶ API URL: ' + API);
+  line('▶ পাসওয়ার্ড দৈর্ঘ্য: ' + pw.length + 'টি অক্ষর (নিজের মতো মিলিয়ে দেখুন)');
+
+  // ① public endpoint
+  line('\n① orders (পাবলিক, পাসওয়ার্ড ছাড়া)…');
+  try {
+    const r1 = await post({ action: 'orders', password: pw });
+    line('   HTTP ' + r1.status + ' · ' + r1.ms + 'ms · ok=' + !!(r1.json && r1.json.ok));
+    if (r1.json && r1.json.ok) line('   ✅ ব্যাকএন্ড জীবন্ত — নতুন ডিপ্লয়েড কোড চলছে');
+    else line('   ⚠️ ok=false → ' + (r1.json && r1.json.error || r1.raw));
+  } catch (e) { line('   ❌ কলই যায়নি: ' + e.message + '\n   → CORS/ইন্টারনেট সমস্যা, বা URL-এ ভুল'); }
+
+  // ② admin-only endpoint (validates password)
+  line('\n② pendingReviews (পাসওয়ার্ড দরকার)…');
+  await sleep(300);
+  try {
+    const r2 = await post({ action: 'pendingReviews', password: pw });
+    line('   HTTP ' + r2.status + ' · ' + r2.ms + 'ms');
+    if (r2.json && r2.json.ok) line('   ✅ পাসওয়ার্ড ঠিক আছে');
+    else if (r2.json && /পাসওয়ার্ড/.test(r2.json.error || '')) line('   ❌ পাসওয়ার্ড ভুল — Apps Script-এ ADMIN_PASSWORD আরেকজন?');
+    else line('   ❌ ' + (r2.json && r2.json.error || r2.raw));
+  } catch (e) { line('   ❌ ' + e.message); }
+
+  // ③ bizList
+  line('\n③ bizList:expenses (নতুন কোডের proof)…');
+  await sleep(300);
+  try {
+    const r3 = await post({ action: 'bizList', password: pw, table: 'expenses' });
+    line('   HTTP ' + r3.status + ' · ' + r3.ms + 'ms');
+    if (r3.json && r3.json.ok) line('   ✅ bizList চলছে — Expenses শিট তৈরি হয়েছে/হবে (' + (r3.json.list || []).length + ' এন্ট্রি)');
+    else line('   ❌ ' + ((r3.json && r3.json.error) || r3.raw) + '\n   → নতুন কোড DEPLOY হয়নি — Deploy → Manage deployments → Edit → New version');
+  } catch (e) { line('   ❌ ' + e.message); }
+
+  // ④ bizSave + ⑤ bizDelete (cleanup)
+  line('\n④ bizSave টেস্ট এন্ট্রি…');
+  await sleep(300);
+  const testId = 'TEST-' + Date.now();
+  try {
+    const r4 = await post({ action: 'bizSave', password: pw, table: 'expenses', row: { id: testId, time: '২০২৬-০১-০১ ০০:০০', type: 'টেস্ট', amount: 1, note: 'connection test' } });
+    line('   HTTP ' + r4.status + ' · ' + r4.ms + 'ms · ' + (r4.json && r4.json.ok ? '✅ শিটে লেখা গেছে' : '❌ ' + (r4.json && r4.json.error || r4.raw)));
+    line('\n⑤ টেস্ট এন্ট্রি মুছে দেওয়া হচ্ছে…');
+    await sleep(300);
+    const r5 = await post({ action: 'bizDelete', password: pw, table: 'expenses', id: testId });
+    line('   ' + (r5.json && r5.json.ok ? '✅ পরিষ্কার হয়ে গেছে' : '❌ ' + (r5.json && r5.json.error || 'মুছতে পারেনি')));
+  } catch (e) { line('   ❌ ' + e.message); }
+
+  line('\n═══ সারসংক্ষেপ ═══');
+  line('৩号 + ④ সফল হলে → সব ঠিক, পেজে যান।');
+  line('② পাসওয়ার্ড ভুল হলে → Apps Script-এ ADMIN_PASSWORD দেখুন।');
+  line('③ "অজানা action" হলে → নতুন version DEPLOY করা হয়নি।');
+  document.getElementById('go').disabled = false;
+});
+</script>
+</body>
+</html>

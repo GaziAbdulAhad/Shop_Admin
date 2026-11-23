@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>Analytics · বিক্রি বিশ্লেষণ — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+  .range-bar { display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; margin-bottom:1rem; }
+  .chart { display:flex; align-items:flex-end; gap:6px; height:190px; padding:.75rem .5rem 0; border-bottom:1.5px solid #E8E2E8; position:relative; }
+  .chart .bar { flex:1; min-width:0; background:linear-gradient(180deg,var(--plum),var(--purple)); border-radius:6px 6px 0 0; position:relative; transition:background .2s; cursor:default; }
+  .chart .bar:hover { background:linear-gradient(180deg,var(--gold),var(--gold-deep)); }
+  .chart .bar span { position:absolute; top:-1.35rem; left:50%; transform:translateX(-50%); font-size:.6rem; font-weight:700; color:var(--purple); white-space:nowrap; }
+  .chart-labels { display:flex; gap:6px; padding:.3rem .5rem 0; }
+  .chart-labels div { flex:1; text-align:center; font-size:.6rem; color:var(--text-muted); white-space:nowrap; overflow:hidden; }
+  .bar-row { display:grid; grid-template-columns:minmax(90px,1.6fr) 2.4fr auto; gap:.6rem; align-items:center; font-size:.82rem; padding:.3rem 0; }
+  .bar-row .track { height:14px; background:var(--soft-gray); border-radius:999px; overflow:hidden; }
+  .bar-row .fill { height:100%; background:linear-gradient(90deg,var(--plum),var(--purple)); border-radius:999px; }
+  .bar-row.gold .fill { background:linear-gradient(90deg,var(--gold),var(--gold-deep)); }
+  .empty-note { text-align:center; color:var(--text-muted); padding:2rem 1rem; font-size:.85rem; }
+</style>
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Analytics · বিক্রি বিশ্লেষণ</h1><p class="sub">আপনার Orders শিটের আসল ডেটা থেকে — কোনো অনুমান বা নকল সংখ্যা নেই</p></div>
+      <button class="btn btn-outline btn-sm" id="refreshBtn" type="button"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><polyline points="3 4 3 10 9 10"/></svg> রিফ্রেশ</button>
+    </div>
+
+    <div class="range-bar" role="group" aria-label="সময়সীমা">
+      <button class="chip" data-range="7" aria-pressed="false">৭ দিন</button>
+      <button class="chip" data-range="30" aria-pressed="true">৩০ দিন</button>
+      <button class="chip" data-range="90" aria-pressed="false">৯০ দিন</button>
+      <button class="chip" data-range="all" aria-pressed="false">সব</button>
+      <span class="hint" id="rangeNote" style="margin-left:auto"></span>
+    </div>
+
+    <div class="stats" id="statTiles">
+      <div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div>
+    </div>
+
+    <section class="card card-pad" style="margin-bottom:1rem" aria-labelledby="chartTitle">
+      <h2 id="chartTitle">দৈনিক বিক্রয় (শেষ ১৪ দিন)</h2>
+      <p class="hint" style="margin-bottom:.4rem">কেবল <strong>ডেলিভারড</strong> ও <strong>শিপড</strong> অর্ডার — বাতিল বাদ</p>
+      <div class="chart" id="dailyChart"><div class="empty-note">লোড হচ্ছে…</div></div>
+      <div class="chart-labels" id="dailyLabels"></div>
+    </section>
+
+    <div class="grid-2">
+      <div style="display:grid;gap:1rem">
+        <section class="card card-pad" aria-labelledby="prodTitle">
+          <h2 id="prodTitle">সবচেয়ে বেশি বিক্রি — প্রোডাক্ট</h2>
+          <div id="productBars"></div>
+        </section>
+        <section class="card card-pad" aria-labelledby="distTitle">
+          <h2 id="distTitle">জেলা ভিত্তিক অর্ডার</h2>
+          <div id="districtBars"></div>
+        </section>
+      </div>
+      <div style="display:grid;gap:1rem">
+        <section class="card card-pad" aria-labelledby="funnelTitle">
+          <h2 id="funnelTitle">অর্ডার ফানেল</h2>
+          <p class="hint" style="margin-bottom:.5rem">কোন ধাপে অর্ডার আটকে আছে দেখুন</p>
+          <div id="funnel"></div>
+        </section>
+        <section class="card card-pad" aria-labelledby="stockTitle">
+          <h2 id="stockTitle">স্টক আউট প্রোডাক্ট</h2>
+          <p class="hint" style="margin-bottom:.5rem">এগুলো এখন বিক্রি হচ্ছে না — রিস্টক করলে আয় বাড়বে</p>
+          <div id="stockOut"></div>
+        </section>
+        <section class="card card-pad">
+          <h2>এক্সপোর্ট</h2>
+          <p class="hint" style="margin-bottom:.6rem">এই পিরিয়ডের অর্ডার Google Sheet/Excel-এ নিন</p>
+          <button class="btn btn-gold btn-block btn-sm" id="exportBtn" type="button">📥 CSV ডাউনলোড</button>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, api, requireAuth, renderSidebar, toast, downloadCSV, dhakaToday, dayOf } = ADM;
+let currentPw = null, allOrders = [], range = 30;
+renderSidebar('analytics.html');
+
+/* ₯ Revenue only counts orders that actually went out / got delivered.
+   Cancelled orders never happened; "new" orders are still pending confirmation. */
+const EARNING = new Set(['শিপড', 'ডেলিভারড']);
+const isEarning = o => EARNING.has(o.status);
+const num = v => Number(v) || 0;
+
+function inRange(o) {
+  if (range === 'all') return true;
+  const cutoff = new Date(Date.now() - range * 864e5 + 6 * 3600e3).toISOString().slice(0, 10);
+  return dayOf(o.time) >= cutoff;
+}
+const current = () => allOrders.filter(inRange);
+
+function renderStats() {
+  const list = current();
+  const earning = list.filter(isEarning);
+  const revenue = earning.reduce((s, o) => s + num(o.total), 0);
+  const units = earning.reduce((s, o) => s + (num(o.qty) || 1), 0);
+  const canceled = list.filter(o => o.status === 'বাতিল');
+  const cancelRate = list.length ? Math.round(canceled.length / list.length * 100) : 0;
+  const pending = list.filter(o => o.status === 'নতুন').length;
+  const today = dhakaToday();
+  const todayOrders = allOrders.filter(o => dayOf(o.time) === today);
+
+  const cells = [
+    ['আয় (শিপড+ডেলিভারড)', taka(revenue), 'gold'],
+    ['অর্ডার সংখ্যা', list.length, ''],
+    ['গড় অর্ডার মূল্য (AOV)', taka(earning.length ? Math.round(revenue / earning.length) : 0), ''],
+    ['বিক্রিত ইউনিট', units, ''],
+    ['কনফার্ম বাকি', pending, pending > 0 ? 'alert' : ''],
+    ['বাতিলের হার', cancelRate + '%', cancelRate >= 20 ? 'alert' : ''],
+    ['আজকের অর্ডার', todayOrders.length, ''],
+    ['আজকের আয়', taka(todayOrders.filter(isEarning).reduce((s, o) => s + num(o.total), 0)), '']
+  ];
+  $('#statTiles').innerHTML = cells.map(([l, v, c]) => `<div class="stat ${c}"><small>${esc(l)}</small><b>${v}</b></div>`).join('');
+  $('#rangeNote').textContent = `${list.length} টি অর্ডারের ভিত্তিতে`;
+}
+
+function renderChart() {
+  const days = 14, out = [];
+  const base = new Date(Date.now() + 6 * 3600e3);
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(base.getTime() - i * 864e5).toISOString().slice(0, 10);
+    const sum = allOrders.filter(o => dayOf(o.time) === d && isEarning(o)).reduce((s, o) => s + num(o.total), 0);
+    out.push({ d, sum });
+  }
+  const max = Math.max(...out.map(x => x.sum), 1);
+  $('#dailyChart').innerHTML = out.map(x => {
+    const h = Math.max(3, Math.round(x.sum / max * 150));
+    return `<div class="bar" style="height:${h}px" title="${x.d}: ${taka(x.sum)}">${x.sum ? `<span>${Math.round(x.sum / 1000) > 0 ? (x.sum / 1000).toFixed(1) + 'k' : x.sum}</span>` : ''}</div>`;
+  }).join('');
+  $('#dailyLabels').innerHTML = out.map(x => `<div>${x.d.slice(5)}</div>`).join('');
+}
+
+function renderBars(container, items, opts = {}) {
+  const el = $(container);
+  if (!items.length) { el.innerHTML = '<p class="empty-note">এই সময়ে কোনো ডেটা নেই</p>'; return; }
+  const max = Math.max(...items.map(i => i.value), 1);
+  el.innerHTML = items.map(i => `
+    <div class="bar-row ${opts.gold ? 'gold' : ''}">
+      <span title="${esc(i.label)}" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.label)}</span>
+      <div class="track"><div class="fill" style="width:${Math.max(2, i.value / max * 100)}%"></div></div>
+      <span style="white-space:nowrap;font-weight:700;color:var(--purple)">${esc(i.display)}</span>
+    </div>`).join('');
+}
+
+function renderBreakdowns() {
+  const earning = current().filter(isEarning);
+
+  /* top products — by revenue */
+  const byProd = {};
+  earning.forEach(o => {
+    const k = String(o.product || '(অজানা)');
+    byProd[k] = byProd[k] || { revenue: 0, units: 0 };
+    byProd[k].revenue += num(o.total);
+    byProd[k].units += num(o.qty) || 1;
+  });
+  const top = Object.entries(byProd).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 6)
+    .map(([label, v]) => ({ label, value: v.revenue, display: taka(v.revenue) + ' · ' + v.units + 'টি' }));
+  renderBars('#productBars', top, { gold: true });
+
+  /* districts */
+  const byDist = {};
+  current().forEach(o => {
+    const k = String(o.district || '(অজানা)');
+    byDist[k] = (byDist[k] || 0) + 1;
+  });
+  const dists = Object.entries(byDist).sort((a, b) => b[1] - a[1]).slice(0, 6)
+    .map(([label, n]) => ({ label, value: n, display: n + 'টি' }));
+  renderBars('#districtBars', dists);
+}
+
+function renderFunnel() {
+  const list = current();
+  const steps = [
+    ['নতুন (অপেক্ষমাণ)', ['নতুন']],
+    ['যোগাযোগ / কনফার্ম', ['যোগাযোগ হয়েছে', 'কনফার্মড']],
+    ['প্রসেসিং', ['প্রসেসিং']],
+    ['কুরিয়ারে', ['শিপড']],
+    ['ডেলিভারড', ['ডেলিভারড']],
+    ['বাতিল', ['বাতিল']]
+  ];
+  const total = list.length || 1;
+  $('#funnel').innerHTML = steps.map(([label, sts]) => {
+    const n = list.filter(o => sts.includes(o.status)).length;
+    const pct = Math.round(n / total * 100);
+    return `<div class="bar-row" style="${label === 'বাতিল' ? 'opacity:.72' : ''}">
+      <span>${esc(label)}</span>
+      <div class="track"><div class="fill" style="width:${n ? Math.max(3, pct) : 0}%${label === 'বাতিল' ? ';background:linear-gradient(90deg,#D98A8A,#B3434B)' : ''}"></div></div>
+      <span style="white-space:nowrap;font-weight:700;color:var(--purple)">${n} · ${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+async function renderStockOut() {
+  try {
+    const products = await ADM.getProducts();
+    const out = products.filter(p => ADM.isSoldOut(p));
+    $('#stockOut').innerHTML = out.length
+      ? out.map(p => `<div style="display:flex;justify-content:space-between;gap:.5rem;padding:.35rem 0;border-bottom:1px solid var(--soft-gray);font-size:.83rem">
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.name)}</span>
+          <a href="manage.html" class="stock-dot stock-out" style="text-decoration:none;white-space:nowrap">স্টক শেষ →</a>
+        </div>`).join('')
+      : '<p class="empty-note" style="color:var(--success)">সব প্রোডাক্ট স্টকে আছে ✓</p>';
+  } catch { $('#stockOut').innerHTML = '<p class="empty-note">প্রোডাক্ট লোড হয়নি</p>'; }
+}
+
+function renderAll() {
+  $$('.range-bar .chip').forEach(b => b.setAttribute('aria-pressed', String(String(range) === b.dataset.range)));
+  renderStats(); renderChart(); renderBreakdowns(); renderFunnel();
+}
+
+$('.range-bar').addEventListener('click', e => {
+  const b = e.target.closest('[data-range]'); if (!b) return;
+  range = b.dataset.range === 'all' ? 'all' : Number(b.dataset.range);
+  renderAll();
+});
+
+$('#exportBtn').addEventListener('click', () => {
+  const list = current();
+  if (!list.length) return toast('এই সময়ে কোনো অর্ডার নেই', 'error');
+  downloadCSV('arifah-analytics-' + dhakaToday() + '.csv',
+    ['সময়', 'অর্ডার নম্বর', 'প্রোডাক্ট', 'পরিমাণ', 'মোট', 'জেলা', 'স্ট্যাটাস'],
+    list.map(o => [o.time, o.orderId, o.product, o.qty, o.total, o.district, o.status]));
+  toast('CSV ডাউনলোড হয়েছে ✓');
+});
+
+async function load(pw) {
+  currentPw = pw;
+  try {
+    const r = await api({ action: 'orders', password: pw });
+    if (!r.ok) throw new Error(r.error || 'অর্ডার লোড হয়নি');
+    allOrders = r.list || [];
+    renderAll();
+    renderStockOut();
+  } catch (e) {
+    $('#statTiles').innerHTML = `<div class="card card-pad" style="grid-column:1/-1;color:var(--danger)">${esc(e.message || 'অর্ডার লোড করা যায়নি')}</div>`;
+  }
+}
+requireAuth(pw => load(pw));
+$('#refreshBtn').addEventListener('click', async () => {
+  if (!currentPw) return;
+  $('#refreshBtn').disabled = true;
+  await load(currentPw);
+  $('#refreshBtn').disabled = false;
+});
+</script>
+</body>
+</html>

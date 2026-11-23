@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>ড্যাশবোর্ড — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div>
+        <h1>ড্যাশবোর্ড</h1>
+        <p class="sub" id="todayLine"></p>
+      </div>
+      <button class="btn btn-outline btn-sm no-print" id="refreshBtn" type="button">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><polyline points="3 4 3 10 9 10"/></svg>
+        রিফ্রেশ
+      </button>
+    </div>
+
+    <!-- stat tiles -->
+    <div class="stats" id="statTiles" aria-live="polite">
+      <div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- recent orders -->
+      <section class="card card-pad" aria-labelledby="recentTitle">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          <h2 id="recentTitle" style="margin:0">সাম্প্রতিক অর্ডার</h2>
+          <a class="btn btn-ghost btn-sm" href="orders.html">সব অর্ডার →</a>
+        </div>
+        <div id="recentOrders" class="tbl-wrap"><div class="skeleton" style="height:200px"></div></div>
+      </section>
+
+      <!-- right rail -->
+      <div style="display:grid;gap:1rem">
+        <section class="card card-pad" aria-labelledby="qaTitle">
+          <h2 id="qaTitle">দ্রুত কাজ</h2>
+          <div class="qa">
+            <a class="qa-item" href="add-product.html"><span class="ic g"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span><b>নতুন প্রোডাক্ট যোগ করুন</b><small>ছবি আপলোড করে শিটে সরাসরি সেভ</small></span></a>
+            <a class="qa-item" href="manage.html"><span class="ic p"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L9 17l-4 1 1-4L16.5 3.5z"/></svg></span><span><b>প্রোডাক্ট এডিট / মোছা</b><small>দাম, স্টক, ট্যাগ, ছবি</small></span></a>
+            <a class="qa-item" href="orders.html"><span class="ic n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.7l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.1a1.6 1.6 0 0 0 1.6-1.2L20.5 7H6"/></svg></span><span><b>নতুন অর্ডার</b><small>কনফার্ম করুন ও কুরিয়ারে দিন</small></span></a>
+            <a class="qa-item" href="manage.html#pending"><span class="ic r"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span><b>পেন্ডিং রিভিউ</b><small><span id="pendingCount">…</span> টি অনুমোদনের অপেক্ষায়</small></span></a>
+            <a class="qa-item" href="analytics.html"><span class="ic p"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="21" x2="21" y2="21"/><rect x="4" y="12" width="3.4" height="8" rx="1"/><rect x="10.3" y="7" width="3.4" height="13" rx="1"/><rect x="16.6" y="3" width="3.4" height="17" rx="1"/></svg></span><span><b>বিক্রি বিশ্লেষণ</b><small>কোন পণ্য, কোন জেলা — সবচেয়ে বেশি বিক্রি</small></span></a>
+            <a class="qa-item" href="finance.html"><span class="ic g"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h12M6 9h12M6 4c6 0 8 2.5 8 5s-2 5-8 5l8 7"/></svg></span><span><b>আর্থিক হিসাব</b><small>খরচ, লাভ-ক্ষতি, ওয়ার্কিং ক্যাপিটাল</small></span></a>
+            <a class="qa-item" href="trackers.html"><span class="ic n"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M4 20V9l5 3V9l5 3V4h4v16"/></svg></span><span><b>স্টক ও সাপ্লায়ার</b><small>স্টক আপডেট, পেয়েবল, প্যাকেজিং</small></span></a>
+          </div>
+        </section>
+
+        <section class="card card-pad" aria-labelledby="catTitle">
+          <h2 id="catTitle">ক্যাটালগ অবস্থা</h2>
+          <div id="catalogStats" style="display:grid;gap:.45rem;font-size:.88rem"><div class="skeleton" style="height:60px"></div></div>
+        </section>
+
+        <section class="card card-pad" aria-labelledby="helpTitle">
+          <h2 id="helpTitle">মনে রাখুন</h2>
+          <ul style="list-style:disc;padding-left:1.15rem;font-size:.8rem;color:var(--text-muted);display:grid;gap:.3rem">
+            <li>অর্ডার কনফার্ম করুন — কনফার্ম না হলে কুরিয়ার যাবে না।</li>
+            <li>স্টক খালি = সীমাহীন · <strong>0</strong> = স্টক শেষ</li>
+            <li>ডেলিভারড করলে ক্রেতা রিভিউ দিতে পারবে</li>
+            <li>পাসওয়ার্ড কাউকে দেবেন না · ভুল ৮ বার দিলে ১৫ মিনিট লক</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, getProducts, api, requireAuth, renderSidebar, toast } = ADM;
+const fmtToday = () => new Date(Date.now() + 6 * 3600e3).toISOString().slice(0, 10);
+$('#todayLine').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+renderSidebar('index.html');
+
+const STATUS_BADGE = { 'নতুন': 'b-new', 'যোগাযোগ হয়েছে': 'b-progress', 'কনফার্মড': 'b-progress', 'প্রসেসিং': 'b-progress', 'শিপড': 'b-shipped', 'ডেলিভারড': 'b-done', 'বাতিল': 'b-cancel' };
+
+async function loadDashboard(pw) {
+  // orders (authenticated)
+  try {
+    const r = await api({ action: 'orders', password: pw });
+    if (!r.ok) throw new Error(r.error || 'অর্ডার লোড হয়নি');
+    const orders = r.list || [];
+    const today = fmtToday();
+    const byStatus = s => orders.filter(o => o.status === s).length;
+    const progress = byStatus('যোগাযোগ হয়েছে') + byStatus('কনফার্মড') + byStatus('প্রসেসিং');
+    const delivered = orders.filter(o => o.status === 'ডেলিভারড');
+    const revenue = delivered.reduce((a, o) => a + (Number(o.total) || 0), 0);
+    const newCount = byStatus('নতুন');
+
+    const badge = document.querySelector('#navOrderBadge');
+    if (badge) { badge.textContent = newCount; badge.hidden = newCount === 0; }
+
+    const cells = [
+      ['মোট অর্ডার', orders.length, ''],
+      ['আজকের অর্ডার', orders.filter(o => String(o.time).slice(0, 10) === today).length, ''],
+      ['নতুন (কনফার্ম বাকি)', newCount, newCount > 0 ? 'alert' : ''],
+      ['প্রসেসিং-এ', progress, ''],
+      ['শিপড', byStatus('শিপড'), ''],
+      ['ডেলিভারড', delivered.length, ''],
+      ['বাতিল', byStatus('বাতিল'), ''],
+      ['ডেলিভারড বিক্রি', taka(revenue), 'gold']
+    ];
+    $('#statTiles').innerHTML = cells.map(([label, value, cls]) => `<div class="stat ${cls}"><small>${esc(label)}</small><b>${value}</b></div>`).join('');
+
+    $('#recentOrders').innerHTML = orders.length
+      ? `<table class="admin"><thead><tr><th>সময়</th><th>অর্ডার</th><th>গ্রাহক</th><th>মোট</th><th>স্ট্যাটাস</th></tr></thead><tbody>${
+          orders.slice(0, 6).map(o => `<tr>
+            <td style="white-space:nowrap;font-size:.78rem">${esc(o.time)}</td>
+            <td style="font-weight:700">${esc(o.orderId)}</td>
+            <td>${esc(o.name)}<br><span class="hint">${esc(o.district || '')}</span></td>
+            <td style="white-space:nowrap;font-weight:700">${taka(o.total)}</td>
+            <td><span class="badge ${STATUS_BADGE[o.status] || 'b-progress'}">${esc(o.status || '')}</span></td>
+          </tr>`).join('')}</tbody></table>`
+      : '<p class="hint" style="padding:.5rem">এখনও কোনো অর্ডার নেই। সাইটে অর্ডার আসলে এখানে দেখাবে।</p>';
+  } catch (e) {
+    $('#statTiles').innerHTML = '<div class="card card-pad" style="grid-column:1/-1;color:var(--danger)">অর্ডার লোড করা যায়নি — পাসওয়ার্ড ঠিক আছে কিনা দেখুন।</div>';
+    $('#recentOrders').innerHTML = '<p class="hint" style="padding:.5rem">অর্ডার লোড হয়নি।</p>';
+    toast(e.message || 'অর্ডার লোড হয়নি', 'error');
+  }
+
+  // catalog snapshot (public — no pw needed)
+  try {
+    const products = await getProducts(true);
+    const soldOut = products.filter(p => ADM.isSoldOut(p)).length;
+    const cats = {};
+    products.forEach(p => { const c = String(p.category || '').trim() || '(ক্যাটাগরি নেই)'; cats[c] = (cats[c] || 0) + 1; });
+    $('#catalogStats').innerHTML = `
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--soft-gray);padding:.3rem 0"><span class="hint">মোট প্রোডাক্ট</span><b>${products.length} টি</b></div>
+      <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--soft-gray);padding:.3rem 0"><span class="hint">স্টক শেষ</span><b style="color:var(--danger)">${soldOut} টি</b></div>
+      <div style="display:flex;justify-content:space-between;padding:.3rem 0"><span class="hint">ক্যাটাগরি</span><span>${Object.keys(cats).map(c => `${esc(c)} (${cats[c]})`).join(', ')}</span></div>`;
+  } catch {
+    $('#catalogStats').innerHTML = '<p class="hint">ক্যাটালগ লোড হয়নি।</p>';
+  }
+
+  // pending reviews count
+  try {
+    const r = await api({ action: 'pendingReviews', password: pw });
+    const n = r.ok ? (r.list || []).length : 0;
+    $('#pendingCount').textContent = n;
+  } catch { $('#pendingCount').textContent = '?'; }
+}
+
+let currentPw = null;
+requireAuth(pw => { currentPw = pw; loadDashboard(pw); });
+$('#refreshBtn').addEventListener('click', async () => {
+  if (!currentPw) return;
+  const btn = $('#refreshBtn'); btn.disabled = true;
+  await loadDashboard(currentPw);
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>

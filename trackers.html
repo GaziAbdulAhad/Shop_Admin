@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>স্টক · সাপ্লায়ার · প্যাকেজিং — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+  @media(max-width:560px){.two{grid-template-columns:1fr}}
+  .section-nav{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+  .panel[hidden]{display:none}
+  .stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.75rem}
+  .stock-card{border:1px solid #EDE8ED;border-radius:14px;padding:.8rem;display:flex;flex-direction:column;gap:.45rem;background:#fff}
+  .stock-card.low{border-color:#EBD89F;background:#FFFCF3}
+  .stock-card.out{border-color:#EAC6C6;background:#FFF9F9}
+  .stock-card .name{font-weight:700;font-size:.86rem;line-height:1.35;min-height:2.6em}
+  .stock-num{display:flex;align-items:center;gap:.5rem}
+  .stock-num input{width:70px;text-align:center;font-weight:800;min-height:36px}
+  .bar{height:8px;border-radius:999px;background:var(--soft-gray);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:999px;background:var(--success)}
+  .bar i.low{background:var(--gold)}
+  .bar i.out{background:var(--danger)}
+</style>
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div><h1>স্টক · সাপ্লায়ার · প্যাকেজিং</h1><p class="sub">দোকানের রোজকার হিসাব — এই ডিভাইসে সেভ হয় (+ CSV export)</p></div>
+    </div>
+
+    <div class="section-nav" role="tablist" aria-label="বিভাগ">
+      <button class="chip" data-panel="stock" role="tab" aria-selected="true" aria-pressed="true">📦 স্টক</button>
+      <button class="chip" data-panel="suppliers" role="tab" aria-selected="false" aria-pressed="false">🏭 সাপ্লায়ার</button>
+      <button class="chip" data-panel="packaging" role="tab" aria-selected="false" aria-pressed="false">🎁 প্যাকেজিং</button>
+      <button class="chip" data-panel="settings" role="tab" aria-selected="false" aria-pressed="false">⚙️ মার্জিন সেটিংস</button>
+    </div>
+
+    <!-- ═══ STOCK ═══ -->
+    <section class="panel" id="panel-stock" role="tabpanel" aria-labelledby="stockHead">
+      <div class="card card-pad">
+        <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.6rem">
+          <h2 id="stockHead" style="margin:0">প্রোডাক্ট স্টক লেভেল</h2>
+          <span class="hint">শিটের Products থেকে আনা — সংখ্যা পরিবর্তন করলে সাথে সাথে live সাইটেও যায়</span>
+        </div>
+        
+    <section class="card card-pad" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap">
+        <div>
+          <b style="color:var(--purple)">ডেটার অবস্থা</b>
+          <p class="hint js-sync-state" style="margin-top:.15rem">…</p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm js-sync-pull" type="button">🔄 শিট থেকে টান (Sync)</button>
+          <button class="btn btn-gold btn-sm js-sync-push" type="button">⬆️ এই ডিভাইসের ডেটা শিটে পাঠান</button>
+          <a class="btn btn-ghost btn-sm" href="test-connection.html" target="_blank" style="border:1px solid #EDE8ED">🔍 সংযোগ পরীক্ষা</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats" id="stockStats" style="margin-bottom:.75rem"></div>
+        <div class="stock-grid" id="stockGrid"><div class="skeleton" style="height:130px"></div><div class="skeleton" style="height:130px"></div></div>
+      </div>
+    </section>
+
+    <!-- ═══ SUPPLIERS ═══ -->
+    <section class="panel" id="panel-suppliers" role="tabpanel" hidden>
+      <div class="grid-2">
+        <div class="card card-pad">
+          <h2 id="supFormHead">সাপ্লায়ার যোগ / এডিট</h2>
+          <form id="supForm">
+            <input type="hidden" id="supId">
+            <div class="field"><label for="supName">নাম <span class="req">*</span></label><input class="input" id="supName" required maxlength="80" placeholder="যেমন: ঢাকা পাইপ হাউজ"></div>
+            <div class="two">
+              <div class="field" style="margin-bottom:0"><label for="supPhone">মোবাইল</label><input class="input" id="supPhone" maxlength="11" inputmode="numeric" placeholder="01XXXXXXXXX"></div>
+              <div class="field" style="margin-bottom:0"><label for="supPayable">বর্তমান পেয়েবল (৳)</label><input class="input" id="supPayable" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+            </div>
+            <div class="field" style="margin-top:.75rem"><label for="supNote">নোট</label><input class="input" id="supNote" maxlength="120" placeholder="কী সাপ্লাই দেয়, দাম, শর্ত…"></div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-primary" type="submit">সেভ করুন</button>
+              <button class="btn btn-ghost" type="button" id="supReset">নতুন</button>
+            </div>
+          </form>
+        </div>
+        <div class="card card-pad">
+          <h2>সাপ্লায়ার লিস্ট</h2>
+          <div id="supList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ PACKAGING ═══ -->
+    <section class="panel" id="panel-packaging" role="tabpanel" hidden>
+      <div class="grid-2">
+        <div class="card card-pad">
+          <h2>প্যাকেজিং আইটেম</h2>
+          <form id="pkForm">
+            <input type="hidden" id="pkId">
+            <div class="field"><label for="pkName">আইটেম <span class="req">*</span></label><input class="input" id="pkName" required maxlength="80" placeholder="যেমন: বাবল র‍্যাপ, থার্মাল বক্স"></div>
+            <div class="two">
+              <div class="field" style="margin-bottom:0"><label for="pkQty">স্টকে (সংখ্যা)</label><input class="input" id="pkQty" type="number" min="0" inputmode="numeric" placeholder="100"></div>
+              <div class="field" style="margin-bottom:0"><label for="pkPer">প্রতি পার্সেলে ব্যবহার</label><input class="input" id="pkPer" type="number" min="0" step="0.1" inputmode="decimal" placeholder="1"></div>
+            </div>
+            <div class="field" style="margin-top:.75rem"><label for="pkCost">একক দাম (৳)</label><input class="input" id="pkCost" type="number" min="0" inputmode="numeric" placeholder="5"></div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-primary" type="submit">সেভ করুন</button>
+              <button class="btn btn-ghost" type="button" id="pkReset">নতুন</button>
+            </div>
+          </form>
+        </div>
+        <div class="card card-pad">
+          <h2>স্টক ও কত পার্সেল চলবে</h2>
+          <div id="packList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <section class="panel" id="panel-settings" role="tabpanel" hidden>
+      <form class="card card-pad" id="setForm" style="max-width:520px">
+        <h2>মার্জিন ও কুরিয়ার ফি</h2>
+        <p class="hint" style="margin-bottom:.6rem">P&amp;L-এর প্রোডাক্ট কস্ট এই অনুপাতে ধরা হয় — আপনার আসল মার্জিন অনুযায়ী ঠিক করে নিন</p>
+        <div class="two">
+          <div class="field" style="margin-bottom:0"><label for="setCogs">প্রোডাক্ট কস্ট (% আয়ের)</label><input class="input" id="setCogs" type="number" min="0" max="99" inputmode="numeric"></div>
+          <div class="field" style="margin-bottom:0"><label for="setShipIn">ডেলিভারি চার্জ — ঢাকা (৳)</label><input class="input" id="setShipIn" type="number" min="0" inputmode="numeric"></div>
+          <div class="field" style="margin-bottom:0"><label for="setShipOut">ডেলিভারি চার্জ — বাইরে (৳)</label><input class="input" id="setShipOut" type="number" min="0" inputmode="numeric"></div>
+          <div class="field" style="margin-bottom:0"><label for="setCourierIn">কুরিয়ার খরচ — ঢাকা (৳)</label><input class="input" id="setCourierIn" type="number" min="0" inputmode="numeric"></div>
+          <div class="field" style="margin-bottom:0"><label for="setCourierOut">কুরিয়ার খরচ — বাইরে (৳)</label><input class="input" id="setCourierOut" type="number" min="0" inputmode="numeric"></div>
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:.9rem">সেটিংস সেভ করুন</button>
+        <p class="hint" style="margin-top:.5rem">⚠️ ডেলিভারি চার্জ বদলালে Admin প্যানেলে দেখাবে, কিন্তু <strong>live সাইটে</strong> পরিবর্তন করতে <code>data.js</code> / sheet কোড আপডেট লাগবে।</p>
+      </form>
+      <div class="card card-pad" style="max-width:520px;margin-top:1rem">
+        <h2>ডেটা</h2>
+        <p class="hint" style="margin-bottom:.6rem">এই ডিভাইসে জমা সব business data একবারে CSV-এ নিন</p>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-gold btn-sm" id="exportAll">📥 সব ডেটা CSV</button>
+          <button class="btn btn-danger btn-sm" id="clearAll">🗑️ সব ডেটা মুছুন</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, requireAuth, renderSidebar, toast, confirmBox, Biz, downloadCSV, getProducts, api, dhakaToday, wireSync } = ADM;
+let currentPw = null, products = [];
+renderSidebar('trackers.html');
+
+/* ── tabs ── */
+$$('[data-panel]').forEach(btn => btn.addEventListener('click', () => {
+  $$('[data-panel]').forEach(b => { b.setAttribute('aria-pressed', String(b === btn)); b.setAttribute('aria-selected', String(b === btn)); });
+  $$('.panel').forEach(p => { p.hidden = p.id !== 'panel-' + btn.dataset.panel; });
+}));
+
+/* ═══ STOCK ═══ */
+function stockStatus(p) {
+  if (ADM.isSoldOut(p)) return 'out';
+  const n = Number(String(p.stock || '').trim());
+  if (String(p.stock || '').trim() !== '' && !isNaN(n) && n > 0 && n <= 5) return 'low';
+  return 'ok';
+}
+function renderStock() {
+  const out = products.filter(p => stockStatus(p) === 'out').length;
+  const low = products.filter(p => stockStatus(p) === 'low').length;
+  $('#stockStats').innerHTML = `
+    <div class="stat"><small>মোট প্রোডাক্ট</small><b>${products.length}</b></div>
+    <div class="stat ${low ? 'alert' : ''}"><small>কম স্টক (১–৫)</small><b>${low}</b></div>
+    <div class="stat ${out ? 'alert' : ''}"><small>স্টক আউট</small><b>${out}</b></div>`;
+  $('#stockGrid').innerHTML = products.map(p => {
+    const st = stockStatus(p);
+    const raw = String(p.stock == null ? '' : p.stock).trim();
+    const qty = raw === '' ? null : Number(raw);
+    const pct = qty == null ? 100 : Math.min(100, Math.round(qty / 20 * 100));
+    return `<div class="stock-card ${st}">
+      <p class="name">${esc(p.name)}</p>
+      <div class="bar"><i class="${st}" style="width:${pct}%"></i></div>
+      <div class="stock-num">
+        <label class="hint" for="st-${esc(p.id)}">স্টক</label>
+        <input class="input" id="st-${esc(p.id)}" type="number" min="0" inputmode="numeric" value="${raw}" placeholder="∞" data-sid="${esc(p.id)}" ${st === 'out' ? 'disabled' : ''}>
+        <button class="btn btn-outline btn-sm" type="button" data-save-stock="${esc(p.id)}" ${st === 'out' ? 'disabled' : ''}>সেভ</button>
+      </div>
+      <span class="hint">${st === 'out' ? '<span style="color:var(--danger);font-weight:700">🚫 স্টক শেষ — অর্ডার ব্লক করা হয়েছে</span>' : st === 'low' ? '<span style="color:var(--gold-deep);font-weight:700">⚠️ শেষ হওয়ার পথে</span>' : '✅ খালি = সীমাহীন (∞)'}</span>
+    </div>`;
+  }).join('') || '<p class="empty-note">প্রোডাক্ট নেই</p>';
+}
+$('#stockGrid').addEventListener('click', async e => {
+  const b = e.target.closest('[data-save-stock]'); if (!b) return;
+  const id = b.dataset.saveStock;
+  const p = products.find(x => String(x.id) === String(id));
+  const val = $('#st-' + CSS.escape(id))?.value ?? '';
+  b.disabled = true;
+  try {
+    const product = {
+      name: p.name, price: p.price, oldprice: p.oldprice ?? '', stock: String(val).trim(),
+      category: p.category ?? '', tags: p.tags ?? '', desc: p.desc ?? '', video: p.video ?? '',
+      image: String(p.image || '').split(/[\s,|]+/).filter(Boolean).join('\n')
+    };
+    const r = await api({ action: 'update', password: currentPw, id: p.id, product });
+    if (!r.ok) throw new Error(r.error || 'সেভ হয়নি');
+    p.stock = product.stock;
+    renderStock();
+    toast('স্টক আপডেট হয়েছে ✓ (সাইটেও এখনই বদলাবে)');
+  } catch (err) { toast(err.message || 'সমস্যা হয়েছে', 'error'); }
+  finally { b.disabled = false; }
+});
+
+/* ═══ SUPPLIERS ═══ */
+function renderSuppliers() {
+  const l = Biz.getSuppliers();
+  $('#supList').innerHTML = l.length ? l.map(s => `
+    <div style="display:flex;justify-content:space-between;gap:.6rem;padding:.55rem 0;border-bottom:1px solid var(--soft-gray);font-size:.85rem">
+      <div><b>${esc(s.name)}</b>${s.phone ? ` · <a href="https://wa.me/${esc(String(s.phone).replace(/\D/g,'').replace(/^0/,'880'))}" target="_blank" rel="noopener" style="color:var(--plum)">WhatsApp</a>` : ''}
+      <br><span class="hint">${esc(s.note || '')}</span>${Number(s.payable) ? `<br><span class="hint">পেয়েবল: <b style="color:var(--danger)">${taka(s.payable)}</b></span>` : ''}</div>
+      <div style="display:flex;gap:.3rem;align-items:flex-start"><button class="btn btn-outline btn-sm" data-edit-sup="${esc(s.id)}">এডিট</button><button class="btn btn-danger btn-sm" data-del-sup="${esc(s.id)}">✕</button></div>
+    </div>`).join('') : '<p class="empty-note">এখনও সাপ্লায়ার নেই</p>';
+}
+$('#supForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#supName').value.trim(); if (!name) return;
+  await Biz.saveSupplier({ id: $('#supId').value || undefined, name, phone: $('#supPhone').value.replace(/\D/g, '').slice(0, 11), payable: Number($('#supPayable').value) || 0, note: $('#supNote').value.trim() });
+  e.target.reset(); $('#supId').value = '';
+  renderSuppliers();
+});
+$('#supReset').addEventListener('click', () => { $('#supForm').reset(); $('#supId').value = ''; });
+$('#supList').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-edit-sup]');
+  if (ed) { const s = Biz.getSuppliers().find(x => x.id === ed.dataset.editSup); if (!s) return; $('#supId').value = s.id; $('#supName').value = s.name; $('#supPhone').value = s.phone || ''; $('#supPayable').value = s.payable || ''; $('#supNote').value = s.note || ''; $('#supName').focus(); return; }
+  const del = e.target.closest('[data-del-sup]');
+  if (del) { if (!(await confirmBox('এই সাপ্লায়ার মুছে ফেলবেন?'))) return; await Biz.removeSupplier(del.dataset.delSup); renderSuppliers(); }
+});
+
+/* ═══ PACKAGING ═══ */
+function renderPackaging() {
+  const l = Biz.getPackaging();
+  $('#packList').innerHTML = l.length ? l.map(p => {
+    const qty = Number(p.qty) || 0, per = Number(p.per) || 1;
+    const parcels = per > 0 ? Math.floor(qty / per) : qty;
+    return `<div style="padding:.55rem 0;border-bottom:1px solid var(--soft-gray);font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;gap:.5rem"><b>${esc(p.name)}</b>
+        <div style="display:flex;gap:.3rem"><button class="btn btn-outline btn-sm" data-edit-pk="${esc(p.id)}">এডিট</button><button class="btn btn-danger btn-sm" data-del-pk="${esc(p.id)}">✕</button></div></div>
+      <span class="hint">স্টক: <b>${qty}</b> ${p.cost ? '· একক ' + taka(p.cost) : ''} · প্রতি পার্সেলে ${per}</span>
+      <br><span class="hint" style="color:${parcels < 10 ? 'var(--danger)' : 'var(--success)'};font-weight:700">→ প্রায় ${parcels} টি পার্সেল চলবে</span>
+    </div>`;
+  }).join('') : '<p class="empty-note">এখনও প্যাকেজিং আইটেম নেই</p>';
+}
+$('#pkForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('#pkName').value.trim(); if (!name) return;
+  await Biz.savePackaging({ id: $('#pkId').value || undefined, name, qty: Number($('#pkQty').value) || 0, per: Number($('#pkPer').value) || 1, cost: Number($('#pkCost').value) || 0 });
+  e.target.reset(); $('#pkId').value = '';
+  renderPackaging();
+});
+$('#pkReset').addEventListener('click', () => { $('#pkForm').reset(); $('#pkId').value = ''; });
+$('#packList').addEventListener('click', async e => {
+  const ed = e.target.closest('[data-edit-pk]');
+  if (ed) { const p = Biz.getPackaging().find(x => x.id === ed.dataset.editPk); if (!p) return; $('#pkId').value = p.id; $('#pkName').value = p.name; $('#pkQty').value = p.qty || ''; $('#pkPer').value = p.per || ''; $('#pkCost').value = p.cost || ''; $('#pkName').focus(); return; }
+  const del = e.target.closest('[data-del-pk]');
+  if (del) { if (!(await confirmBox('এই প্যাকেজিং আইটেম মুছে ফেলবেন?'))) return; await Biz.removePackaging(del.dataset.delPk); renderPackaging(); }
+});
+
+/* ═══ SETTINGS ═══ */
+function loadSettings() {
+  const s = Biz.getSettings();
+  $('#setCogs').value = s.cogsPct ?? 55;
+  $('#setShipIn').value = s.shippingIn ?? 60;
+  $('#setShipOut').value = s.shippingOut ?? 120;
+  $('#setCourierIn').value = s.courierFeeIn ?? 70;
+  $('#setCourierOut').value = s.courierFeeOut ?? 130;
+}
+$('#setForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  await Biz.saveSettings({
+    cogsPct: Number($('#setCogs').value) || 55,
+    shippingIn: Number($('#setShipIn').value) || 60,
+    shippingOut: Number($('#setShipOut').value) || 120,
+    courierFeeIn: Number($('#setCourierIn').value) || 70,
+    courierFeeOut: Number($('#setCourierOut').value) || 130
+  });
+});
+$('#exportAll').addEventListener('click', () => {
+  const expenses = Biz.getExpenses(), suppliers = Biz.getSuppliers(), packaging = Biz.getPackaging();
+  downloadCSV('arifah-business-data-' + dhakaToday() + '.csv',
+    ['ধরন', 'নাম/খরচের ধরন', 'পরিমাণ', 'তারিখ', 'নোট'],
+    [
+      ...expenses.map(x => ['খরচ', x.type, x.amount, x.date, x.note]),
+      ...suppliers.map(s => ['সাপ্লায়ার', s.name, s.payable, '', s.phone + ' ' + (s.note || '')]),
+      ...packaging.map(p => ['প্যাকেজিং', p.name, p.qty, '', 'প্রতি পার্সেলে ' + p.per])
+    ]);
+  toast('CSV ডাউনলোড হয়েছে ✓');
+});
+$('#clearAll').addEventListener('click', async () => {
+  if (!(await confirmBox('এই ডিভাইসের সব business data (খরচ, সাপ্লায়ার, প্যাকেজিং) মুছে ফেলবেন? এই কাজ ফেরানো যাবে না।', 'সব মুছুন'))) return;
+  Biz.clearAll(); loadSettings(); renderSuppliers(); renderPackaging(); toast('ডেটা মুছে ফেলা হয়েছে');
+});
+
+
+requireAuth(async pw => {
+  wireSync();
+  currentPw = pw;
+  await Biz.pullAll();           /* sheet first, local cache as fallback */
+  loadSettings(); renderSuppliers(); renderPackaging();
+  Biz.onChange(() => { if (currentPw) { loadSettings(); renderSuppliers(); renderPackaging(); } });
+  try { products = await getProducts(true); renderStock(); }
+  catch { $('#stockGrid').innerHTML = '<p class="empty-note">প্রোডাক্ট লোড হয়নি</p>'; }
+});
+</script>
+</body>
+</html>
