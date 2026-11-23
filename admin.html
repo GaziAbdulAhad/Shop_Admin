@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin"><meta name="theme-color" content="#100B14">
+<title>প্রোডাক্ট ও রিভিউ ম্যানেজ</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<style>
+[hidden]{display:none!important}
+
+.tbl{overflow-x:auto;margin-bottom:32px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-weight:600;white-space:nowrap}
+td img{width:56px;height:56px;object-fit:cover;border-radius:8px;display:block}
+td .btn{width:auto;margin:0;min-height:40px;padding:0 14px}
+</style></head>
+<body><main class="wrap">
+<p style="margin:18px 0 0"><a href="index.html">← প্রোডাক্ট যোগ করুন (হোম)</a> &nbsp;·&nbsp; <a href="orders.html">অর্ডার ড্যাশবোর্ড →</a></p>
+<h1 style="margin:12px 0 16px;font-size:1.8rem">প্রোডাক্ট ও রিভিউ ম্যানেজ</h1>
+<div class="box" style="margin-bottom:24px"><label>অ্যাডমিন পাসওয়ার্ড<input id="pw" type="password" autocomplete="current-password"></label></div>
+
+<h2 class="sec">প্রোডাক্ট মুছুন</h2>
+<div class="tbl"><table><thead><tr><th>ছবি</th><th>নাম</th><th>দাম</th><th></th></tr></thead>
+<tbody id="pb"><tr><td colspan="4">লোড হচ্ছে...</td></tr></tbody></table></div>
+
+<form class="box" id="ef" hidden>
+<h2 style="margin:0;font-size:1.3rem">প্রোডাক্ট এডিট করুন</h2>
+<label>প্রোডাক্টের নাম<input name="name" required></label>
+<div class="row" style="align-items:flex-start"><label style="flex:1;min-width:130px">দাম (৳)<input name="price" type="number" min="0" required></label>
+<label style="flex:1;min-width:130px">আগের দাম (৳)<input name="oldprice" type="number" min="0"></label>
+<label style="flex:1;min-width:130px">স্টক <small>খালি = সীমাহীন, 0 = শেষ</small><input name="stock" type="number" min="0"></label></div>
+<label>ক্যাটাগরি<input name="category"></label>
+<fieldset class="dv"><legend>ট্যাগ (হোমপেজের সারির জন্য)</legend>
+<label class="rd"><input type="checkbox" name="tag" value="new"><span>🆕 নতুন পণ্য</span></label>
+<label class="rd"><input type="checkbox" name="tag" value="trending"><span>🔥 Trending</span></label>
+<label class="rd"><input type="checkbox" name="tag" value="offer"><span>🏷️ সেল / অফার</span></label></fieldset>
+<label>বিবরণ<textarea name="desc" rows="5"></textarea></label>
+<label>YouTube লিংক<input name="video" type="url"></label>
+<label>ছবির লিংক (প্রতি লাইনে একটা)<textarea name="image" rows="4"></textarea></label>
+<div class="row"><button class="btn" type="submit">আপডেট করুন</button><button class="btn alt" id="ecancel" type="button" style="width:auto">বাতিল</button><span class="msg" id="emsg" role="status"></span></div>
+</form>
+<h2 class="sec">রিভিউ যোগ করুন</h2>
+<form class="box" id="rf">
+<label>প্রোডাক্ট<select name="productId" id="rp" required></select></label>
+<div class="row" style="align-items:flex-start"><label style="flex:2;min-width:160px">ক্রেতার নাম<input name="name" required maxlength="60"></label>
+<label style="flex:1;min-width:100px">রেটিং<select name="rating"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select></label></div>
+<label>রিভিউ (ঐচ্ছিক)<textarea name="text" rows="3" maxlength="500"></textarea></label>
+<label>ক্রেতার রিভিউয়ের স্ক্রিনশট (ঐচ্ছিক)<input id="rshot" type="file" accept="image/*"></label>
+<div class="row"><button class="btn" id="rgo" type="submit">রিভিউ সেভ করুন</button><span class="msg" id="rmsg" role="status"></span></div>
+</form>
+
+<h2 class="sec">ক্রেতার রিভিউ অনুমোদন</h2>
+<div class="box"><button class="btn" id="pload" type="button">অপেক্ষমাণ রিভিউ দেখুন</button><div id="pl"></div></div>
+</main>
+<script src="js/app.js"></script>
+<script>
+const $=id=>document.getElementById(id),pw=$("pw");
+pw.value=sessionStorage.getItem("pw")||"";
+pw.addEventListener("input",()=>sessionStorage.setItem("pw",pw.value));
+function needPw(){if(!pw.value){alert("আগে অ্যাডমিন পাসওয়ার্ড দিন");pw.focus();return false}return true}
+function shrink(file,max=1600){return new Promise((res,rej)=>{const im=new Image(),u=URL.createObjectURL(file);
+  im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.85).split(",")[1])};
+  im.onerror=()=>rej(new Error("ছবি পড়া যায়নি"));im.src=u})}
+function fillSel(){$("rp").innerHTML=(_c||[]).map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join("")}
+async function loadProducts(){
+  try{
+    const l=await loadAll(true);
+    $("pb").innerHTML=l.length?l.map(p=>{const c=cover(p);return `<tr><td>${c?`<img src="${esc(c)}" alt="" referrerpolicy="no-referrer" onerror="imgFail(this)">`:""}</td><td>${esc(p.name)}${isSoldOut(p)?' <small style="color:#ff7b6b">(স্টক শেষ)</small>':''}</td><td>${tk(p.price)}</td><td style="white-space:nowrap"><button class="btn" type="button" data-edit="${esc(p.id)}" style="margin-right:6px">এডিট</button><button class="btn alt" data-del="${esc(p.id)}">মুছুন</button></td></tr>`}).join(""):'<tr><td colspan="4">কোনো প্রোডাক্ট নেই।</td></tr>';
+    fillSel();
+  }catch(e){$("pb").innerHTML='<tr><td colspan="4">প্রোডাক্ট লোড করা যায়নি।</td></tr>'}
+}
+loadProducts();
+$("pb").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-del]");if(!b||!needPw()||!confirm("এই প্রোডাক্ট মুছে ফেলবেন?"))return;
+  b.disabled=true;const r=await api({action:"delete",password:pw.value,id:b.dataset.del});
+  if(!r.ok){alert(r.error||"মোছা যায়নি");b.disabled=false;return}loadProducts();
+});
+$("rf").addEventListener("submit",async e=>{
+  e.preventDefault();if(!needPw())return;
+  const rf=e.target,rm=$("rmsg"),d=Object.fromEntries(new FormData(rf)),file=$("rshot").files[0];
+  rm.style.color="";rm.textContent="সেভ হচ্ছে...";$("rgo").disabled=true;
+  try{
+    let photo="";
+    if(file){rm.textContent="স্ক্রিনশট আপলোড হচ্ছে...";const u=await api({action:"upload",password:pw.value,data:await shrink(file)});if(!u.ok)throw new Error(u.error||"ছবি আপলোড হয়নি");photo=u.url}
+    const r=await api({action:"addReview",password:pw.value,review:{productId:d.productId,name:d.name,rating:d.rating,text:d.text,photo}});
+    if(!r.ok)throw new Error(r.error||"সেভ হয়নি");
+    rf.reset();rm.textContent="রিভিউ যোগ হয়েছে।";
+  }catch(err){rm.style.color="#ff7b6b";rm.textContent=err.message||"সমস্যা হয়েছে"}
+  finally{$("rgo").disabled=false}
+});
+const pl=$("pl");
+async function loadPending(){
+  if(!needPw())return;
+  const r=await api({action:"pendingReviews",password:pw.value});
+  if(!r.ok){pl.textContent=r.error||"লোড হয়নি";return}
+  pl.innerHTML=r.list.length?r.list.map(x=>`<div class="box" style="margin:8px 0"><b>${esc(x.product)}</b><div>${stars(x.rating)} ${esc(x.name)} <small>(অর্ডার ${esc(x.orderId)})</small></div><p style="margin:0">${esc(x.text)}</p>${x.photo?`<img class="rph" src="${esc(imgURL(x.photo,400))}" alt="">`:""}<div class="row"><button class="btn" data-d="approved" data-row="${x.row}" data-o="${esc(x.orderId)}">অনুমোদন</button><button class="btn alt" data-d="rejected" data-row="${x.row}" data-o="${esc(x.orderId)}">বাতিল</button></div></div>`).join(""):"কোনো অপেক্ষমাণ রিভিউ নেই।";
+}
+$("pload").onclick=loadPending;
+pl.addEventListener("click",async e=>{
+  const b=e.target.closest("button[data-d]");if(!b)return;
+  const r=await api({action:"moderate",password:pw.value,row:b.dataset.row,orderId:b.dataset.o,decision:b.dataset.d});
+  if(!r.ok){alert(r.error||"হয়নি");return}loadPending();
+});
+const ef=$("ef"),E=ef.elements;
+$("pb").addEventListener("click",e=>{const b=e.target.closest("[data-edit]");if(!b)return;
+  const p=(_c||[]).find(x=>String(x.id)===b.dataset.edit);if(!p)return;
+  ef.hidden=false;ef.dataset.id=p.id;$("emsg").textContent="";
+  ["name","price","oldprice","category","stock","desc","video"].forEach(k=>{E[k].value=p[k]==null?"":p[k]});
+  E.image.value=String(p.image||"");
+  const tg=String(p.tags||"").toLowerCase().split(/[,\s|]+/);ef.querySelectorAll("[name=tag]").forEach(c=>{c.checked=tg.includes(c.value)});
+  ef.scrollIntoView({behavior:"smooth",block:"start"})});
+$("ecancel").onclick=()=>{ef.hidden=true};
+ef.addEventListener("submit",async e=>{e.preventDefault();if(!needPw())return;
+  const m=$("emsg");m.style.color="";m.textContent="সেভ হচ্ছে...";
+  const product={name:E.name.value.trim(),price:E.price.value,oldprice:E.oldprice.value,category:E.category.value.trim(),
+    tags:[...ef.querySelectorAll("[name=tag]:checked")].map(x=>x.value).join(","),stock:E.stock.value,desc:E.desc.value,video:E.video.value.trim(),
+    image:E.image.value.split(/[\s,|]+/).filter(Boolean).join("\n")};
+  if(product.video&&!ytId(product.video)){m.style.color="#ff7b6b";m.textContent="YouTube লিংকটি সঠিক নয়।";return}
+  try{const r=await api({action:"update",password:pw.value,id:ef.dataset.id,product});
+    if(!r.ok)throw new Error(r.error||"সেভ হয়নি");m.textContent="আপডেট হয়েছে।";loadProducts();setTimeout(()=>{ef.hidden=true},900)}
+  catch(err){m.style.color="#ff7b6b";m.textContent=err.message||"সমস্যা হয়েছে"}});
+</script></body></html>
