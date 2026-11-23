@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" role="img" aria-label="MEHER">
+  <rect width="400" height="480" fill="#F1EEF0"/>
+  <circle cx="200" cy="215" r="120" fill="none" stroke="#E8B9C7" stroke-width="2" stroke-dasharray="3 7" opacity="0.8"/>
+  <text x="200" y="238" text-anchor="middle" font-family="Georgia, serif" font-size="96" fill="#50385E">M</text>
+  <text x="200" y="330" text-anchor="middle" font-family="Georgia, serif" font-size="22" letter-spacing="10" fill="#C6A46A">MEHER</text>
+</svg>

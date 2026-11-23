@@ -1,4 +1,196 @@
 <!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>অর্ডার ড্যাশবোর্ড — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+  td.customer a { color: var(--plum); font-weight: 700; text-decoration: none; }
+  td.customer a:hover { text-decoration: underline; }
+  .chip-count { opacity: .75; font-weight: 700; margin-left: .25rem; }
+</style>
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div><h1>অর্ডার ড্যাশবোর্ড</h1><p class="sub">সবশেষ ৩০০টি অর্ডার · স্ট্যাটাস বদলালে ক্রেতার ট্র্যাক পেজেও বদলে যাবে</p></div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" id="csvBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          CSV ডাউনলোড
+        </button>
+        <button class="btn btn-outline btn-sm" id="refreshBtn" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 2.6-6.3"/><polyline points="3 4 3 10 9 10"/></svg>
+          রিফ্রেশ
+        </button>
+      </div>
+    </div>
+
+    <div class="stats" id="statTiles" aria-live="polite">
+      <div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div>
+    </div>
+
+    <div class="card card-pad" style="margin-bottom:.75rem">
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
+        <div class="chips" id="statusChips" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+        <input class="input" id="orderSearch" type="search" placeholder="অর্ডার নম্বর / নাম / মোবাইল…" aria-label="অর্ডার খুঁজুন" style="max-width:250px;min-height:38px">
+      </div>
+    </div>
+
+    <div class="card card-pad tbl-wrap" style="padding:0;overflow-x:auto">
+      <table class="admin" id="ordersTable">
+        <thead><tr><th>সময়</th><th>অর্ডার</th><th>গ্রাহক</th><th>পণ্য</th><th>মোট</th><th>জেলা</th><th>স্ট্যাটাস</th></tr></thead>
+        <tbody id="orderRows"><tr><td colspan="7"><div class="skeleton" style="height:120px"></div></td></tr></tbody>
+      </table>
+    </div>
+    <p class="hint" style="margin-top:.5rem">“ডেলিভারড” সেট করলে ক্রেতা রিভিউ দিতে পারবে। “বাতিল” করলে ক্রেতাকে WhatsApp-এ জানানোর কথা মনে রাখবেন।</p>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, api, requireAuth, renderSidebar, toast } = ADM;
+let currentPw = null, orders = [], curStatus = '', searchTerm = '';
+renderSidebar('orders.html');
+
+const STATUSES = ['নতুন', 'যোগাযোগ হয়েছে', 'কনফার্মড', 'প্রসেসিং', 'শিপড', 'ডেলিভারড', 'বাতিল'];
+const STATUS_BADGE = { 'নতুন': 'b-new', 'যোগাযোগ হয়েছে': 'b-progress', 'কনফার্মড': 'b-progress', 'প্রসেসিং': 'b-progress', 'শিপড': 'b-shipped', 'ডেলিভারড': 'b-done', 'বাতিল': 'b-cancel' };
+
+function filtered() {
+  let list = orders;
+  if (curStatus) list = list.filter(o => o.status === curStatus);
+  if (searchTerm) {
+    const q = searchTerm.toLowerCase();
+    list = list.filter(o => [o.orderId, o.name, o.phone, o.product, o.district].filter(Boolean).join(' ').toLowerCase().includes(q));
+  }
+  return list;
+}
+
+function renderStats() {
+  const today = new Date(Date.now() + 6 * 3600e3).toISOString().slice(0, 10);
+  const by = s => orders.filter(o => o.status === s).length;
+  const progress = by('যোগাযোগ হয়েছে') + by('কনফার্মড') + by('প্রসেসিং');
+  const delivered = orders.filter(o => o.status === 'ডেলিভারড');
+  const cells = [
+    ['মোট অর্ডার', orders.length, ''],
+    ['আজকের', orders.filter(o => String(o.time).slice(0, 10) === today).length, ''],
+    ['নতুন', by('নতুন'), by('নতুন') > 0 ? 'alert' : ''],
+    ['প্রসেসে', progress, ''],
+    ['শিপড', by('শিপড'), ''],
+    ['ডেলিভারড', delivered.length, ''],
+    ['বাতিল', by('বাতিল'), ''],
+    ['ডেলিভারড বিক্রি', taka(delivered.reduce((a, o) => a + (Number(o.total) || 0), 0)), 'gold']
+  ];
+  $('#statTiles').innerHTML = cells.map(([label, value, cls]) => `<div class="stat ${cls}"><small>${esc(label)}</small><b>${value}</b></div>`).join('');
+}
+
+function renderChips() {
+  const count = s => orders.filter(o => o.status === s).length;
+  $('#statusChips').innerHTML = ['', ...STATUSES].map(s => {
+    const n = s ? count(s) : orders.length;
+    const label = s || 'সব';
+    return `<button class="chip" data-status="${esc(s)}" aria-pressed="${s === curStatus}">${esc(label)}<span class="chip-count">${n}</span></button>`;
+  }).join('');
+}
+
+function renderTable() {
+  const list = filtered();
+  $('#orderRows').innerHTML = list.length
+    ? list.map(o => `<tr>
+        <td style="white-space:nowrap;font-size:.78rem">${esc(o.time)}</td>
+        <td style="font-weight:700;white-space:nowrap">${esc(o.orderId)}</td>
+        <td class="customer" style="min-width:170px">
+          <b>${esc(o.name)}</b><br>
+          <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a> ·
+          <a href="https://wa.me/${esc(String(o.phone).replace(/\D/g, '').replace(/^0/, '880'))}" target="_blank" rel="noopener">WhatsApp</a><br>
+          <span class="hint">${esc(o.address)}</span>
+          ${o.note ? `<br><span class="hint">নোট: ${esc(o.note)}</span>` : ''}
+        </td>
+        <td style="max-width:220px">${esc(o.product)}</td>
+        <td style="white-space:nowrap"><b>${taka(o.total)}</b></td>
+        <td>${esc(o.district || '')}</td>
+        <td><select data-id="${esc(o.orderId)}" data-old="${esc(o.status)}" aria-label="স্ট্যাটাস">
+          ${STATUSES.map(s => `<option${s === o.status ? ' selected' : ''}>${esc(s)}</option>`).join('')}
+        </select></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--text-muted)">কোনো অর্ডার পাওয়া যায়নি।</td></tr>';
+}
+
+async function loadOrders(pw) {
+  currentPw = pw;
+  $('#orderRows').innerHTML = '<tr><td colspan="7"><div class="skeleton" style="height:180px"></div></td></tr>';
+  try {
+    const r = await api({ action: 'orders', password: pw });
+    if (!r.ok) throw new Error(r.error || 'অর্ডার লোড হয়নি');
+    orders = r.list || [];
+    const badge = document.querySelector('#navOrderBadge');
+    const newCount = orders.filter(o => o.status === 'নতুন').length;
+    if (badge) { badge.textContent = newCount; badge.hidden = newCount === 0; }
+    renderStats(); renderChips(); renderTable();
+  } catch (e) {
+    $('#statTiles').innerHTML = '<div class="card card-pad" style="grid-column:1/-1;color:var(--danger)">অর্ডার লোড করা যায়নি।</div>';
+    $('#orderRows').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1.5rem;color:var(--danger)">অর্ডার লোড হয়নি — পাসওয়ার্ড বা ইন্টারনেট চেক করুন।</td></tr>';
+    toast(e.message || 'অর্ডার লোড হয়নি', 'error');
+  }
+}
+
+/* chips: filter */
+$('#statusChips').addEventListener('click', e => {
+  const b = e.target.closest('[data-status]'); if (!b) return;
+  curStatus = b.dataset.status;
+  renderChips(); renderTable();
+});
+/* search */
+$('#orderSearch').addEventListener('input', e => { searchTerm = e.target.value.trim(); renderTable(); });
+/* refresh */
+$('#refreshBtn').addEventListener('click', async () => { $('#refreshBtn').disabled = true; await loadOrders(currentPw); $('#refreshBtn').disabled = false; });
+/* CSV export of the current view */
+$('#csvBtn').addEventListener('click', () => {
+  const rows = filtered();
+  const head = ['সময়','অর্ডার নম্বর','নাম','মোবাইল','পণ্য','মোট','জেলা','ঠিকানা','নোট','স্ট্যাটাস'];
+  const escCsv = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const csv = '﻿' + [head.map(escCsv).join(';'), ...rows.map(o => [o.time, o.orderId, o.name, o.phone, o.product, o.total, o.district, o.address, o.note, o.status].map(escCsv).join(';'))].join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = 'arifah-orders.csv'; a.click();
+  URL.revokeObjectURL(url);
+});
+/* status change */
+$('#orderRows').addEventListener('change', async e => {
+  const sel = e.target.closest('select[data-id]'); if (!sel) return;
+  sel.disabled = true;
+  try {
+    const r = await api({ action: 'setStatus', password: currentPw, orderId: sel.dataset.id, status: sel.value });
+    if (!r.ok) throw new Error(r.error || 'বদলানো যায়নি');
+    const o = orders.find(x => x.orderId === sel.dataset.id);
+    if (o) o.status = sel.value;
+    sel.dataset.old = sel.value;
+    toast('স্ট্যাটাস আপডেট হয়েছে ✓');
+    renderStats(); renderChips();
+  } catch (err) {
+    sel.value = sel.dataset.old;
+    toast(err.message || 'সমস্যা হয়েছে', 'error');
+  } finally {
+    sel.disabled = false;
+  }
+});
+
+requireAuth(pw => loadOrders(pw));
+</script>
+</body>
+</html>
+=======
 <html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><meta name="referrer" content="strict-origin-when-cross-origin"><meta name="theme-color" content="#100B14">
 <title>অর্ডার ড্যাশবোর্ড</title>
@@ -64,3 +256,4 @@ $("tb").addEventListener("change",async e=>{const s=e.target.closest("select[dat
   finally{s.disabled=false}});
 if(pw.value)load();
 </script></body></html>
+>>>>>>> origin/main

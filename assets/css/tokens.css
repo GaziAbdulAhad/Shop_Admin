@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════════════════════
+   MEHER — Design Tokens
+   Brand: Elegant Feminine Luxury × Modern Minimalism
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* ── Core palette (brand) ── */
+  --ivory:        #FAF7F2;  /* warm ivory — page background        */
+  --white:        #FFFFFF;  /* pure white — cards & surfaces       */
+  --dusty-pink:   #E8B9C7;  /* feminine accent                     */
+  --dusty-pink-soft:#F6E4EA;/* dusty pink wash                     */
+  --gold:         #C6A46A;  /* champagne gold — premium details    */
+  --gold-deep:    #A98548;  /* gold for small text/icons           */
+  --purple:       #352344;  /* deep purple — primary brand         */
+  --purple-deep:  #2A1B36;  /* darkest purple (footer gradient end)*/
+  --plum:         #50385E;  /* royal plum — secondary brand        */
+  --plum-soft:    #E9E3EC;  /* plum wash                           */
+  --soft-gray:    #F1EEF0;  /* soft gray — subtle surfaces         */
+
+  /* ── Text ── */
+  --text:         #29242D;  /* primary text                        */
+  --text-muted:   #77717B;  /* secondary text                      */
+  --text-faint:   #A79FA8;  /* placeholder / disabled              */
+
+  /* ── Semantic ── */
+  --success:      #2E7D4F;
+  --success-soft: #E7F4EC;
+  --danger:       #B3434B;
+  --danger-soft:  #F9ECEC;
+  --warning:      #8A6A1F;
+  --warning-soft: #FBF4DE;
+  --info-soft:    #EFF1FA;
+
+  /* ── Typography ── */
+  --font-display: 'Playfair Display', 'Hind Siliguri', serif;
+  --font-body:    'Inter', 'Hind Siliguri', system-ui, sans-serif;
+  --font-bn:      'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+
+  --fs-xs:  .75rem;   /* 12px */
+  --fs-sm:  .8125rem; /* 13px */
+  --fs-base:.9375rem; /* 15px */
+  --fs-md:  1rem;     /* 16px */
+  --fs-lg:  1.125rem; /* 18px */
+  --fs-xl:  1.375rem; /* 22px */
+  --fs-2xl: 1.75rem;  /* 28px */
+  --fs-3xl: 2.25rem;  /* 36px */
+  --fs-4xl: clamp(2.4rem, 5.2vw, 3.6rem);
+
+  --lh-tight: 1.15;
+  --lh-snug:  1.35;
+  --lh-body:  1.65;
+
+  /* ── Spacing scale (4px base) ── */
+  --sp-1: .25rem; --sp-2: .5rem; --sp-3: .75rem; --sp-4: 1rem;
+  --sp-5: 1.5rem; --sp-6: 2rem; --sp-7: 3rem; --sp-8: 4rem; --sp-9: 6rem;
+
+  /* ── Radius ── */
+  --r-sm: .5rem; --r-md: .75rem; --r-lg: 1.125rem; --r-xl: 1.5rem; --r-pill: 999px;
+
+  /* ── Elevation (restrained) ── */
+  --shadow-xs: 0 1px 2px rgba(41,36,45,.06);
+  --shadow-sm: 0 2px 8px rgba(41,36,45,.08);
+  --shadow-md: 0 8px 24px rgba(53,35,68,.12);
+  --shadow-lg: 0 18px 48px rgba(53,35,68,.18);
+  --ring:      0 0 0 3px rgba(198,164,106,.55);
+
+  /* ── Layout ── */
+  --container: 1200px;
+  --header-h:  68px;
+  --ann-h:     36px;
+
+  /* ── Motion ── */
+  --ease: cubic-bezier(.22,.61,.21,1);
+  --dur-fast: .18s;
+  --dur:      .3s;
+
+  /* ── Breakpoints (for reference; media queries use literals) ──
+     sm: 640px · md: 768px · lg: 1024px · xl: 1280px              */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0s; --dur: 0s; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

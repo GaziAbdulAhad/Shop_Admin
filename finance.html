@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>Finance · আর্থিক হিসাব — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+  @media (max-width:560px){ .two{grid-template-columns:1fr} }
+  fieldset.dv { border:1.5px solid #E8E2E8; border-radius:12px; padding:.55rem .75rem; }
+  fieldset.dv legend { font-size:.8rem; font-weight:700; padding:0 .3rem; }
+  .chk { display:flex; align-items:center; gap:.5rem; font-weight:400; font-size:.88rem; padding:.2rem 0; }
+  .chk input { width:19px; height:19px; accent-color:var(--purple); }
+  .pl-row { display:flex; justify-content:space-between; gap:.5rem; padding:.45rem 0; border-bottom:1px dashed #E8E2E8; font-size:.88rem; }
+  .pl-row.total { border-bottom:0; font-weight:800; font-size:1rem; color:var(--purple); }
+  .pl-row.neg b { color:var(--danger); }
+  .pl-row.pos b { color:var(--success); }
+  .tag { display:inline-block; font-size:.68rem; font-weight:700; background:var(--plum-soft); color:var(--plum); border-radius:999px; padding:.15rem .55rem; margin-right:.25rem; }
+</style>
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div><h1>Finance · আর্থিক হিসাব</h1><p class="sub">আয় Orders শিট থেকে · খরচ আপনি লিখুন · লাভ-ক্ষতি হিসাব এখানেই</p></div>
+    </div>
+
+    
+    <section class="card card-pad" style="margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap">
+        <div>
+          <b style="color:var(--purple)">ডেটার অবস্থা</b>
+          <p class="hint js-sync-state" style="margin-top:.15rem">…</p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm js-sync-pull" type="button">🔄 শিট থেকে টান (Sync)</button>
+          <button class="btn btn-gold btn-sm js-sync-push" type="button">⬆️ এই ডিভাইসের ডেটা শিটে পাঠান</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="stats" id="finStats" aria-live="polite">
+      <div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div><div class="skeleton" style="height:82px"></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- ═══ EXPENSES ═══ -->
+      <section class="card card-pad" aria-labelledby="expTitle">
+        <h2 id="expTitle">💸 খরচ যোগ করুন</h2>
+        <p class="hint" style="margin-bottom:.6rem">ক্রেতার কাছ থেকে পাওয়া অর্ডার ছাড়া অন্য সব ব্যয: ক্রয়, কুরিয়ার, প্যাকেজিং, বিজ্ঞাপন…</p>
+        <form id="expForm" novalidate>
+          <div class="field"><label for="xType">খরচের ধরন <span class="req">*</span></label>
+            <select class="input" id="xType" required>
+              <option value="">বেছে নিন…</option>
+              <option>ক্রয় / প্রোডাক্ট কস্ট</option><option>কুরিয়ার খরচ</option><option>প্যাকেজিং</option>
+              <option>বিজ্ঞাপন / মার্কেটিং</option><option>পরিবহন</option><option>শপ রেন্ট</option>
+              <option>ইন্টারনেট / মোবাইল রিচার্জ</option><option>ব্যক্তিগত উত্তোলন</option><option>অন্যান্য</option>
+            </select>
+          </div>
+          <div class="two">
+            <div class="field" style="margin-bottom:0"><label for="xAmount">পরিমাণ (৳) <span class="req">*</span></label><input class="input" id="xAmount" type="number" min="1" inputmode="numeric" required placeholder="500"></div>
+            <div class="field" style="margin-bottom:0"><label for="xDate">তারিখ</label><input class="input" id="xDate" type="date"></div>
+          </div>
+          <div class="field" style="margin-top:.75rem"><label for="xNote">নোট</label><input class="input" id="xNote" maxlength="120" placeholder="যেমন: ঈদের স্টক ক্রয়, পাইপ সাপ্লায়ার…"></div>
+          <button class="btn btn-primary btn-block" type="submit">খরচ যোগ করুন</button>
+          <p class="field-error" id="expErr" role="status"></p>
+        </form>
+
+        <h2 style="margin-top:1.25rem">সাম্প্রতিক খরচ</h2>
+        <div id="expList" style="max-height:300px;overflow-y:auto"></div>
+      </section>
+
+      <!-- ═══ P&L ═══ -->
+      <div style="display:grid;gap:1rem">
+        <section class="card card-pad" aria-labelledby="plTitle">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <h2 id="plTitle" style="margin:0">লাভ-ক্ষতি (P&amp;L)</h2>
+            <div class="range-bar" style="margin:0" role="group" aria-label="সময়সীমা">
+              <button class="chip" data-finrange="7" aria-pressed="false">৭ দিন</button>
+              <button class="chip" data-finrange="30" aria-pressed="true">৩০ দিন</button>
+              <button class="chip" data-finrange="all" aria-pressed="false">সব</button>
+            </div>
+          </div>
+          <p class="hint" style="margin:.35rem 0 .6rem">আয় শিট থেকে · খরচ আপনার entry থেকে · প্রোডাক্ট কস্ট <span id="cogsNote"></span></p>
+          <div id="plBody"></div>
+        </section>
+
+        <section class="card card-pad" aria-labelledby="wcTitle">
+          <h2 id="wcTitle">🧮 ওয়ার্কিং ক্যাপিটাল ক্যালকুলেটর</h2>
+          <p class="hint" style="margin-bottom:.6rem">কত টাকা ঘুরে চলে — হিসাব করতে নিচের বক্সগুলো পূরণ করুন (শুধু এই ডিভাইসে সেভ হয়)</p>
+          <div class="two">
+            <div class="field" style="margin-bottom:0"><label for="wcCash">হাতে নগদ (৳)</label><input class="input" id="wcCash" type="number" min="0" inputmode="numeric" placeholder="যেমন 5000"></div>
+            <div class="field" style="margin-bottom:0"><label for="wcBank">ব্যাংক ব্যালেন্স (৳)</label><input class="input" id="wcBank" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+            <div class="field" style="margin-bottom:0"><label for="wcStock">স্টকের মূল্য (৳)</label><input class="input" id="wcStock" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+            <div class="field" style="margin-bottom:0"><label for="wcDue">গ্রাহকের ড্যু (৳)</label><input class="input" id="wcDue" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+            <div class="field" style="margin-bottom:0"><label for="wcPayable">সাপ্লায়ারকে দেয় (৳)</label><input class="input" id="wcPayable" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+            <div class="field" style="margin-bottom:0"><label for="wcLoan">ঝুঁকিপূর্ণ ঋণ (৳)</label><input class="input" id="wcLoan" type="number" min="0" inputmode="numeric" placeholder="0"></div>
+          </div>
+          <div id="wcResult" style="margin-top:.5rem"></div>
+        </section>
+
+        <section class="card card-pad" aria-labelledby="loanTitle">
+          <h2 id="loanTitle">🏦 লোন / EMI ক্যালকুলেটর</h2>
+          <div class="two">
+            <div class="field" style="margin-bottom:0"><label for="lnAmt">ঋণের পরিমাণ (৳)</label><input class="input" id="lnAmt" type="number" min="0" inputmode="numeric" placeholder="100000"></div>
+            <div class="field" style="margin-bottom:0"><label for="lnInt">বার্ষিক সুদ (%)</label><input class="input" id="lnInt" type="number" min="0" step="0.1" inputmode="decimal" placeholder="12"></div>
+            <div class="field" style="margin-bottom:0"><label for="lnMon">মাস</label><input class="input" id="lnMon" type="number" min="1" max="120" inputmode="numeric" placeholder="12"></div>
+            <div class="field" style="margin-bottom:0"><label for="lnRes">মাসিক কিস্তি</label><input class="input" id="lnRes" readonly tabindex="-1" style="background:var(--ivory);font-weight:800;color:var(--purple)"></div>
+          </div>
+          <p class="hint" style="margin-top:.4rem">সমান কিস্তি (annuity) সূত্র: EMI = P·r·(1+r)ⁿ / ((1+r)ⁿ−1), r = বার্ষিক সুদ ÷ 12÷100</p>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, api, requireAuth, renderSidebar, toast, downloadCSV, dhakaToday, dayOf, Biz, wireSync } = ADM;
+let currentPw = null, allOrders = [], finRange = 30;
+renderSidebar('finance.html');
+
+const SET = () => Biz.getSettings();
+const EARNING = new Set(['শিপড', 'ডেলিভারড']);
+const isEarning = o => EARNING.has(o.status);
+
+/* ── Revenue from the live Orders sheet ── */
+function revenueIn(range) {
+  let list = allOrders.filter(isEarning);
+  if (range !== 'all') {
+    const cutoff = new Date(Date.now() - range * 864e5 + 6 * 3600e3).toISOString().slice(0, 10);
+    list = list.filter(o => dayOf(o.time) >= cutoff);
+  }
+  return { revenue: list.reduce((s, o) => s + (Number(o.total) || 0), 0), count: list.length };
+}
+
+/* ── Expenses from this device ── */
+function expensesIn(range) {
+  let list = Biz.getExpenses();
+  if (range !== 'all') {
+    const cutoff = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
+    list = list.filter(x => (x.date || '').slice(0, 10) >= cutoff);
+  }
+  return { sum: list.reduce((s, x) => s + (Number(x.amount) || 0), 0), count: list.length };
+}
+
+function renderStats() {
+  const { revenue, count } = revenueIn(finRange);
+  const { sum: expSum, count: expCount } = expensesIn(finRange);
+  const s = SET();
+  const cogs = Math.round(revenue * (s.cogsPct || 55) / 100);
+  const profit = revenue - cogs - expSum;
+  const cells = [
+    ['আয় (ডেলিভারড+শিপড)', taka(revenue), 'gold'],
+    ['প্রোডাক্ট কস্ট (~' + (s.cogsPct || 55) + '%)', taka(cogs), ''],
+    ['অন্যান্য খরচ (' + expCount + ' এন্ট্রি)', taka(expSum), ''],
+    ['নিট লাভ / ক্ষতি', taka(profit), profit >= 0 ? '' : 'alert']
+  ];
+  $('#finStats').innerHTML = cells.map(([l, v, c]) => `<div class="stat ${c}"><small>${esc(l)}</small><b>${v}</b></div>`).join('');
+  $('#cogsNote').textContent = 'আপনার সাধারণ মার্জিন ধরে হিসাব — Settings থেকে বদলাতে পারেন (trackers পেজ)';
+}
+
+function renderPL() {
+  const { revenue } = revenueIn(finRange);
+  const { sum: expSum } = expensesIn(finRange);
+  const s = SET();
+  const cogs = Math.round(revenue * (s.cogsPct || 55) / 100);
+  /* COD collection already includes courier cost — not double counted in P&L */
+  const gp = revenue - cogs;
+  const op = gp - expSum;
+  const rows = [
+    ['মোট আয় (Orders শিট)', revenue, 'pos'],
+    ['(−) প্রোডাক্ট কস্ট', cogs, 'neg'],
+    ['= Gross profit', gp, ''],
+    ['(−) অন্যান্য খরচ (আপনার entry)', expSum, 'neg'],
+    ['= নিট লাভ / ক্ষতি', op, op >= 0 ? 'pos' : 'neg'],
+    ['কুরিয়ার ফি (COD-তে অন্তর্ভুক্ত, আলাদা হিসাবে নেই)', null, '']
+  ];
+  $('#plBody').innerHTML = rows.map(([l, v, cls]) =>
+    `<div class="pl-row ${cls}"><span>${esc(l)}</span><b>${v == null ? '—' : taka(v)}</b></div>`).join('');
+}
+
+/* ── expense list ── */
+function renderExpenses() {
+  const list = Biz.getExpenses().slice(0, 30);
+  $('#expList').innerHTML = list.length
+    ? list.map(x => `<div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.45rem 0;border-bottom:1px solid var(--soft-gray);font-size:.85rem">
+        <span><span class="tag">${esc(x.type)}</span>${esc(x.note || '')}<br><small class="hint">${esc(x.date || '')}</small></span>
+        <span style="display:flex;align-items:center;gap:.4rem"><b style="color:var(--danger);white-space:nowrap">−${taka(x.amount)}</b>
+        <button class="btn btn-danger btn-sm" data-del-exp="${esc(x.id)}" aria-label="খরচ মুছুন">✕</button></span>
+      </div>`).join('')
+    : '<p class="empty-note">এখনও কোনো খরচ যোগ করা হয়নি</p>';
+}
+
+$('#expForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const type = $('#xType').value, amount = Number($('#xAmount').value), date = $('#xDate').value || dhakaToday(), note = $('#xNote').value.trim();
+  const err = $('#expErr'); err.classList.remove('show');
+  if (!type) { err.textContent = 'খরচের ধরন বাছুন'; err.classList.add('show'); return; }
+  if (!(amount > 0)) { err.textContent = 'পরিমাণ দিন'; err.classList.add('show'); return; }
+  await Biz.addExpense({ type, amount, date, note });
+  e.target.reset(); $('#xDate').value = dhakaToday();
+  renderStats(); renderPL(); renderExpenses();
+});
+$('#expList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-del-exp]'); if (!b) return;
+  if (!(await ADM.confirmBox('এই খরচের এন্ট্রি মুছবেন? শিট থেকেও মুছে যাবে।'))) return;
+  await Biz.removeExpense(b.dataset.delExp);
+  renderStats(); renderPL(); renderExpenses();
+});
+
+/* ── working capital ── */
+function calcWC() {
+  const v = id => Number($(id).value) || 0;
+  const current_ = v('#wcCash') + v('#wcBank') + v('#wcStock') + v('#wcDue');
+  const liabilities = v('#wcPayable') + v('#wcLoan');
+  const wc = current_ - liabilities;
+  $('#wcResult').innerHTML = `
+    <div class="pl-row"><span>চলা সম্পদ (নগদ+ব্যাংক+স্টক+ড্যু)</span><b>${taka(current_)}</b></div>
+    <div class="pl-row"><span>(−) দায়িত্ব (পেয়েবল+ঋণ)</span><b style="color:var(--danger)">${taka(liabilities)}</b></div>
+    <div class="pl-row total ${wc >= 0 ? 'pos' : 'neg'}"><span>Net Working Capital</span><b>${taka(wc)}</b></div>
+    <p class="hint" style="margin:.35rem 0 0">${wc >= 0 ? 'পর্যাপ্ত — নতুন স্টক কেনার জায়গা আছে' : 'ঋণ/পেয়েবল চলা সম্পদের বেশি — খরচ কমান বা ড্যু তোলার প্রয়োজন'}</p>`;
+}
+['wcCash','wcBank','wcStock','wcDue','wcPayable','wcLoan'].forEach(id => $('#' + id).addEventListener('input', calcWC));
+
+/* ── loan / EMI ── */
+function calcEMI() {
+  const P = Number($('#lnAmt').value) || 0, rate = Number($('#lnInt').value) || 0, n = Number($('#lnMon').value) || 0;
+  if (!P || !n) { $('#lnRes').value = ''; return; }
+  const r = rate / 12 / 100;
+  const emi = r === 0 ? P / n : P * r * Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1);
+  $('#lnRes').value = Math.round(emi).toLocaleString('en-IN');
+}
+['lnAmt','lnInt','lnMon'].forEach(id => $('#' + id).addEventListener('input', calcEMI));
+
+/* ── range chips ── */
+$$('[data-finrange]').forEach(b => b.addEventListener('click', () => {
+  finRange = b.dataset.finrange === 'all' ? 'all' : Number(b.dataset.finrange);
+  $$('[data-finrange]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderStats(); renderPL();
+}));
+
+async function load(pw) {
+  currentPw = pw;
+  try {
+    const r = await api({ action: 'orders', password: pw });
+    if (!r.ok) throw new Error(r.error || 'অর্ডার লোড হয়নি');
+    allOrders = r.list || [];
+  } catch (e) { toast(e.message || 'অর্ডার লোড হয়নি', 'error'); }
+  /* pull expenses + settings from the sheet (falls back to local cache) */
+  await Biz.pullAll();
+  $('#cogsNote').textContent = 'আপনার সাধারণ মার্জিন ধরে হিসাব — Settings থেকে বদলাতে পারেন (trackers পেজ)';
+  $('#xDate').value = dhakaToday();
+  renderStats(); renderPL(); renderExpenses(); calcWC();
+}
+/* sheet data arriving later re-renders the numbers */
+Biz.onChange(() => { if (currentPw) { renderStats(); renderPL(); renderExpenses(); } });
+requireAuth(pw => {
+  wireSync();
+  currentPw = pw;
+  load(pw);
+});
+</script>
+</body>
+</html>

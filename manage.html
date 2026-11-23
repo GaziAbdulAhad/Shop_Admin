@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><meta name="theme-color" content="#352344">
+<title>প্রোডাক্ট ম্যানেজ — ARIFAH Admin</title>
+<link rel="icon" type="image/svg+xml" href="assets/img/placeholder.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/admin.css">
+<style>
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  @media (max-width: 560px) { .two { grid-template-columns: 1fr; } }
+  fieldset.dv { border: 1.5px solid #E8E2E8; border-radius: 12px; padding: .55rem .75rem; }
+  fieldset.dv legend { font-size: .8rem; font-weight: 700; padding: 0 .3rem; }
+  .chk { display: flex; align-items: center; gap: .5rem; font-weight: 400; font-size: .88rem; padding: .2rem 0; }
+  .chk input { width: 19px; height: 19px; accent-color: var(--purple); }
+  #editPanel { scroll-margin-top: 1rem; }
+  .mod-badge { display: inline-block; min-width: 2ch; text-align: center; background: var(--danger-soft); color: var(--danger); font-weight: 800; border-radius: 999px; padding: .05rem .45rem; font-size: .75rem; margin-left: .4rem; }
+</style>
+</head>
+<body>
+<button class="side-toggle" id="sideToggle" aria-label="মেনু"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+
+<div class="shell">
+  <aside class="sidebar" id="admin-sidebar" aria-label="সাইডবার"></aside>
+
+  <main class="content">
+    <div class="page-head">
+      <div><h1>প্রোডাক্ট ম্যানেজ</h1><p class="sub">এডিট · মুছুন · রিভিউ যোগ · রিভিউ অনুমোদন</p></div>
+    </div>
+
+    <!-- ═══ Product list ═══ -->
+    <section class="card card-pad" aria-labelledby="listTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.75rem;margin-bottom:.6rem;flex-wrap:wrap">
+        <h2 id="listTitle" style="margin:0">সব প্রোডাক্ট <span id="productCount" class="hint"></span></h2>
+        <input class="input" id="productSearch" type="search" placeholder="নাম দিয়ে খুঁজুন…" aria-label="প্রোডাক্ট খুঁজুন" style="max-width:260px;min-height:40px">
+      </div>
+      <div class="tbl-wrap"><table class="admin">
+        <thead><tr><th>ছবি</th><th>নাম</th><th>দাম</th><th>স্টক</th><th></th></tr></thead>
+        <tbody id="productRows"><tr><td colspan="5"><div class="skeleton" style="height:52px"></div></td></tr></tbody>
+      </table></div>
+    </section>
+
+    <!-- ═══ Inline edit panel ═══ -->
+    <form class="card card-pad" id="editPanel" hidden style="margin-top:1rem;border-color:var(--gold);border-width:2px">
+      <h2 style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">প্রোডাক্ট এডিট করুন <button type="button" class="btn btn-ghost btn-sm" id="closeEditBtn">বন্ধ করুন ✕</button></h2>
+      <div class="field"><label for="eName">প্রোডাক্টের নাম <span class="req">*</span></label><input class="input" id="eName" name="name" required></div>
+      <div class="two">
+        <div class="field" style="margin-bottom:0"><label for="ePrice">দাম (৳) <span class="req">*</span></label><input class="input" id="ePrice" name="price" type="number" min="0" required></div>
+        <div class="field" style="margin-bottom:0"><label for="eOldPrice">আগের দাম (৳)</label><input class="input" id="eOldPrice" name="oldprice" type="number" min="0"></div>
+      </div>
+      <div class="two" style="margin-top:.75rem">
+        <div class="field" style="margin-bottom:0"><label for="eStock">স্টক <span class="hint" style="display:inline">(খালি = সীমাহীন · 0 = শেষ)</span></label><input class="input" id="eStock" name="stock" type="number" min="0"></div>
+        <div class="field" style="margin-bottom:0"><label for="eCategory">ক্যাটাগরি</label><input class="input" id="eCategory" name="category" placeholder="যেমন Bridal, Necklace"></div>
+      </div>
+      <fieldset class="dv" style="margin-top:.75rem"><legend>ট্যাগ</legend>
+        <label class="chk"><input type="checkbox" name="tag" value="new"><span>🆕 নতুন পণ্য</span></label>
+        <label class="chk"><input type="checkbox" name="tag" value="trending"><span>🔥 Trending</span></label>
+        <label class="chk"><input type="checkbox" name="tag" value="offer"><span>🏷️ সেল / অফার</span></label>
+      </fieldset>
+      <div class="field" style="margin-top:.75rem"><label for="eDesc">বিবরণ</label><textarea class="input" id="eDesc" name="desc" rows="4"></textarea></div>
+      <div class="field"><label for="eVideo">YouTube লিংক</label><input class="input" id="eVideo" name="video" type="url" placeholder="https://www.youtube.com/shorts/…"></div>
+      <div class="field"><label for="eImage">ছবির লিংক <span class="hint" style="display:inline">(প্রতি লাইনে একটা)</span></label><textarea class="input" id="eImage" name="image" rows="3"></textarea></div>
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" type="submit" id="saveEditBtn">আপডেট করুন</button>
+        <button class="btn btn-ghost" type="button" id="cancelEditBtn">বাতিল</button>
+        <p id="editMsg" class="field-error" role="status" style="margin:0"></p>
+      </div>
+    </form>
+
+    <!-- ═══ Add review manually ═══ -->
+    <section class="card card-pad" style="margin-top:1rem" aria-labelledby="reviewAddTitle">
+      <h2 id="reviewAddTitle">রিভিউ যোগ করুন</h2>
+      <p class="hint" style="margin-bottom:.6rem">সত্যিকারের ক্রেতা থেকে পাওয়া রিভিউ যোগ করুন (WhatsApp/ফোনে পাওয়া)। এটা "pending" না হয়ে সরাসরি প্রকাশিত হবে।</p>
+      <form id="addReviewForm" novalidate>
+        <div class="two">
+          <div class="field" style="margin-bottom:0">
+            <label for="rProduct">প্রোডাক্ট <span class="req">*</span></label>
+            <select class="input" id="rProduct" name="productId" required></select>
+          </div>
+          <div class="field" style="margin-bottom:0">
+            <label for="rRating">রেটিং</label>
+            <select class="input" id="rRating" name="rating"><option value="5">★★★★★ (৫)</option><option value="4">★★★★☆ (৪)</option><option value="3">★★★☆☆ (৩)</option><option value="2">★★☆☆☆ (২)</option><option value="1">★☆☆☆☆ (১)</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:.6rem"><label for="rName">ক্রেতার নাম <span class="req">*</span></label><input class="input" id="rName" name="name" required maxlength="60" placeholder="যেমন: MD. MALAK SHIKDER"></div>
+        <div class="field"><label for="rText">রিভিউ</label><textarea class="input" id="rText" name="text" rows="3" maxlength="500" placeholder="valo / কী ভালো লাগল…"></textarea></div>
+        <div class="field"><label for="rShot">ক্রেতার রিভিউয়ের স্ক্রিনশট <span class="hint" style="display:inline">(ঐচ্ছিক)</span></label><input class="input" id="rShot" name="shot" type="file" accept="image/*" style="padding:.5rem"></div>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn btn-primary" type="submit" id="addReviewBtn">রিভিউ সেভ করুন</button><p id="reviewMsg" class="field-error" role="status" style="margin:0"></p></div>
+      </form>
+    </section>
+
+    <!-- ═══ Pending review moderation ═══ -->
+    <section class="card card-pad" id="pending" style="margin-top:1rem;scroll-margin-top:1rem" aria-labelledby="pendingTitle">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem;flex-wrap:wrap">
+        <h2 id="pendingTitle" style="margin:0">ক্রেতাদের রিভিউ অনুমোদন <span class="mod-badge" id="pendingBadge" hidden>0</span></h2>
+        <button class="btn btn-outline btn-sm" id="loadPendingBtn" type="button">অপেক্ষমাণ রিভিউ দেখুন</button>
+      </div>
+      <div id="pendingList" style="margin-top:.6rem;display:grid;gap:.6rem"></div>
+    </section>
+  </main>
+</div>
+
+<script src="assets/js/admin.js"></script>
+<script>
+'use strict';
+const { $, $$, esc, taka, cover, imgURL, getProducts, api, requireAuth, renderSidebar, toast, confirmBox, ytId } = ADM;
+let currentPw = null, allProducts = [];
+renderSidebar('manage.html');
+
+function fillProductSelect() {
+  $('#rProduct').innerHTML = allProducts.map(p => `<option value="${esc(p.id)}">${esc(p.name).slice(0, 80)}</option>`).join('');
+}
+function stockBadge(p) {
+  return ADM.isSoldOut(p)
+    ? '<span class="stock-dot stock-out">স্টক শেষ</span>'
+    : '<span class="stock-dot stock-ok">আছে</span>';
+}
+function renderRows(list) {
+  $('#productRows').innerHTML = list.length
+    ? list.map(p => `<tr>
+        <td>${cover(p, 120) ? `<img class="thumb" src="${esc(cover(p, 120))}" alt="" referrerpolicy="no-referrer" onerror="ADM.imgFail(this)">` : ''}</td>
+        <td style="max-width:340px"><b>${esc(p.name)}</b>${ADM.discountPct(p) ? ` <span class="badge b-new">-${ADM.discountPct(p)}%</span>` : ''}</td>
+        <td style="white-space:nowrap">${taka(p.price)}${p.oldprice ? `<br><s class="hint">${taka(p.oldprice)}</s>` : ''}</td>
+        <td>${stockBadge(p)}</td>
+        <td style="white-space:nowrap"><button class="btn btn-outline btn-sm" type="button" data-edit="${esc(p.id)}">এডিট</button> <button class="btn btn-danger btn-sm" type="button" data-del="${esc(p.id)}">মুছুন</button></td>
+      </tr>`).join('')
+    : '<tr><td colspan="5">কোনো প্রোডাক্ট নেই।</td></tr>';
+}
+
+async function reloadProducts() {
+  allProducts = await getProducts(true);
+  $('#productCount').textContent = `(${allProducts.length} টি)`;
+  fillProductSelect();
+  renderRows(allProducts);
+}
+
+requireAuth(async pw => {
+  currentPw = pw;
+  try { await reloadProducts(); }
+  catch { $('#productRows').innerHTML = '<tr><td colspan="5">প্রোডাক্ট লোড করা যায়নি — সার্ভার বা ইন্টারনেট চেক করুন।</td></tr>'; }
+  try { const r = await api({ action: 'pendingReviews', password: pw }); const n = r.ok ? (r.list || []).length : 0; $('#pendingBadge').textContent = n; $('#pendingBadge').hidden = n === 0; } catch {}
+});
+
+/* search filter */
+$('#productSearch').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  renderRows(q ? allProducts.filter(p => String(p.name).toLowerCase().includes(q)) : allProducts);
+});
+
+/* edit / delete */
+const editPanel = $('#editPanel');
+function openEdit(p) {
+  editPanel.hidden = false;
+  editPanel.dataset.id = p.id;
+  $('#eName').value = p.name || '';
+  $('#ePrice').value = p.price ?? '';
+  $('#eOldPrice').value = p.oldprice ?? '';
+  $('#eStock').value = p.stock ?? '';
+  $('#eCategory').value = p.category ?? '';
+  $('#eDesc').value = p.desc ?? '';
+  $('#eVideo').value = p.video ?? '';
+  $('#eImage').value = String(p.image || '');
+  const tags = String(p.tags || '').toLowerCase().split(/[,\s|]+/);
+  editPanel.querySelectorAll('[name=tag]').forEach(c => { c.checked = tags.includes(c.value); });
+  $('#editMsg').classList.remove('show');
+  editPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+$('#closeEditBtn').addEventListener('click', () => { editPanel.hidden = true; });
+$('#cancelEditBtn').addEventListener('click', () => { editPanel.hidden = true; });
+
+$('#productRows').addEventListener('click', async e => {
+  const editBtn = e.target.closest('[data-edit]');
+  if (editBtn) { const p = allProducts.find(x => String(x.id) === editBtn.dataset.edit); if (p) openEdit(p); return; }
+  const delBtn = e.target.closest('[data-del]');
+  if (delBtn) {
+    if (!(await confirmBox('এই প্রোডাক্ট মুছে ফেলবেন? এটি আর ফেরত আনা যাবে না।', 'মুছে ফেলুন'))) return;
+    delBtn.disabled = true;
+    try {
+      const r = await api({ action: 'delete', password: currentPw, id: delBtn.dataset.del });
+      if (!r.ok) throw new Error(r.error || 'মুছা যায়নি');
+      toast('প্রোডাক্ট মুছে ফেলা হয়েছে');
+      await reloadProducts();
+      editPanel.hidden = true;
+    } catch (err) { toast(err.message || 'সমস্যা হয়েছে', 'error'); delBtn.disabled = false; }
+  }
+});
+
+editPanel.addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#saveEditBtn'), em = $('#editMsg');
+  em.classList.remove('show'); btn.disabled = true;
+  const product = {
+    name: $('#eName').value.trim(),
+    price: $('#ePrice').value, oldprice: $('#eOldPrice').value,
+    stock: $('#eStock').value, category: $('#eCategory').value.trim(),
+    tags: [...editPanel.querySelectorAll('[name=tag]:checked')].map(x => x.value).join(','),
+    desc: $('#eDesc').value, video: $('#eVideo').value.trim(),
+    image: $('#eImage').value.split(/[\s,|]+/).filter(Boolean).join('\n')
+  };
+  if (product.video && !ytId(product.video)) { em.textContent = 'YouTube লিংকটি সঠিক নয়।'; em.classList.add('show'); btn.disabled = false; return; }
+  try {
+    const r = await api({ action: 'update', password: currentPw, id: editPanel.dataset.id, product });
+    if (!r.ok) throw new Error(r.error || 'আপডেট হয়নি');
+    em.style.color = 'var(--success)'; em.textContent = 'আপডেট হয়েছে ✓'; em.classList.add('show');
+    toast('প্রোডাক্ট আপডেট হয়েছে');
+    await reloadProducts();
+    setTimeout(() => { editPanel.hidden = true; }, 800);
+  } catch (err) { em.style.color = 'var(--danger)'; em.textContent = err.message || 'সমস্যা হয়েছে'; em.classList.add('show'); }
+  finally { btn.disabled = false; }
+});
+
+/* add review manually */
+async function shrink(file, max = 1600) {
+  return new Promise((res, rej) => {
+    const im = new Image(), u = URL.createObjectURL(file);
+    im.onload = () => {
+      const k = Math.min(1, max / Math.max(im.width, im.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u);
+      res(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    };
+    im.onerror = () => rej(new Error('ছবি পড়া যায়নি'));
+    im.src = u;
+  });
+}
+$('#addReviewForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target.elements, rm = $('#reviewMsg'), btn = $('#addReviewBtn');
+  rm.classList.remove('show');
+  if (!f.name.value.trim()) { rm.textContent = 'ক্রেতার নাম দিন।'; rm.classList.add('show'); return; }
+  btn.disabled = true;
+  try {
+    let photo = '';
+    const file = f.shot.files && f.shot.files[0];
+    if (file) {
+      const up = await api({ action: 'upload', password: currentPw, data: await shrink(file) });
+      if (!up.ok) throw new Error(up.error || 'ছবি আপলোড হয়নি');
+      photo = up.url;
+    }
+    const r = await api({ action: 'addReview', password: currentPw, review: { productId: f.productId.value, name: f.name.value.trim(), rating: f.rating.value, text: f.text.value.trim(), photo } });
+    if (!r.ok) throw new Error(r.error || 'সেভ হয়নি');
+    e.target.reset();
+    rm.style.color = 'var(--success)'; rm.textContent = 'রিভিউ যোগ হয়েছে ✓'; rm.classList.add('show');
+    toast('রিভিউ যোগ হয়েছে');
+  } catch (err) { rm.style.color = 'var(--danger)'; rm.textContent = err.message || 'সমস্যা হয়েছে'; rm.classList.add('show'); }
+  finally { btn.disabled = false; }
+});
+
+/* pending reviews moderation */
+async function loadPending() {
+  const list = $('#pendingList'), badge = $('#pendingBadge');
+  list.innerHTML = '<div class="skeleton" style="height:120px"></div>';
+  try {
+    const r = await api({ action: 'pendingReviews', password: currentPw });
+    if (!r.ok) throw new Error(r.error || 'লোড হয়নি');
+    const items = r.list || [];
+    badge.textContent = items.length; badge.hidden = items.length === 0;
+    list.innerHTML = items.length
+      ? items.map(x => `<div class="mod-item">
+          <div style="display:flex;justify-content:space-between;gap:.5rem;flex-wrap:wrap"><b>${esc(x.product)}</b><span class="hint">অর্ডার ${esc(x.orderId || '')}</span></div>
+          <div><span style="color:var(--gold-deep);letter-spacing:.08em">${'★'.repeat(Math.min(5, x.rating || 0))}<span style="color:#D8CFDD">${'★'.repeat(Math.max(0, 5 - (x.rating || 0)))}</span></span> <b>${esc(x.name)}</b></div>
+          ${x.text ? `<p style="margin:0;font-size:.9rem">${esc(x.text)}</p>` : ''}
+          ${x.photo ? `<img src="${esc(imgURL(x.photo, 400))}" alt="ক্রেতার ছবি" loading="lazy" referrerpolicy="no-referrer" onerror="ADM.imgFail(this)">` : ''}
+          <div class="mod-actions">
+            <button class="btn btn-gold btn-sm" data-decide="approved" data-row="${esc(x.row)}" data-order="${esc(x.orderId)}">অনুমোদন ✓</button>
+            <button class="btn btn-danger btn-sm" data-decide="rejected" data-row="${esc(x.row)}" data-order="${esc(x.orderId)}">বাতিল করুন</button>
+          </div>
+        </div>`).join('')
+      : '<p class="hint" style="padding:.25rem">কোনো অপেক্ষমাণ রিভিউ নেই।</p>';
+  } catch (err) {
+    list.innerHTML = `<p class="hint" style="color:var(--danger)">${esc(err.message || 'লোড হয়নি')}</p>`;
+  }
+}
+$('#loadPendingBtn').addEventListener('click', loadPending);
+$('#pendingList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-decide]'); if (!b) return;
+  b.disabled = true;
+  try {
+    const r = await api({ action: 'moderate', password: currentPw, row: b.dataset.row, orderId: b.dataset.order, decision: b.dataset.decide });
+    if (!r.ok) throw new Error(r.error || 'হয়নি');
+    toast(b.dataset.decide === 'approved' ? 'রিভিউ অনুমোদিত হয়েছে' : 'রিভিউ বাতিল করা হয়েছে');
+    loadPending();
+  } catch (err) { toast(err.message || 'সমস্যা হয়েছে', 'error'); b.disabled = false; }
+});
+
+if (location.hash === '#pending') setTimeout(() => $('#pending')?.scrollIntoView({ behavior: 'smooth' }), 150);
+</script>
+</body>
+</html>
